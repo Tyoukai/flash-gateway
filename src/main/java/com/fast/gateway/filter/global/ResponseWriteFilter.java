@@ -23,15 +23,6 @@ import static com.fast.gateway.utils.Constants.OUTPUT_JSON_STRING;
 public class ResponseWriteFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-//        ResponseWriteServerHttpResponseDecorator decorator =
-//                new ResponseWriteServerHttpResponseDecorator(exchange);
-//
-//        return chain.filter(exchange).then(Mono.defer(() -> {
-//            exchange.mutate().response(decorator).build();
-//            return Mono.empty();
-//        }));
-
-
 
         return chain.filter(exchange).then(Mono.defer(() -> {
             String result = (String) exchange.getAttributes().get(OUTPUT_JSON_STRING);
@@ -44,8 +35,6 @@ public class ResponseWriteFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        //WRITE_RESPONSE_FILTER 之前执行
-//        return NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - 1;
         return RESPONSE_WRITE.getOrder();
     }
 }
