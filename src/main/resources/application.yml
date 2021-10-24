@@ -1,0 +1,42 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway-test
+  cloud:
+    zookeeper:
+      connect-string: 42.192.49.234:2181
+    gateway:
+      routes:
+      - id: neo_route
+        uri: http://www.ityouknow.com
+        predicates:
+          - Path=/spring-cloud
+      - id: rate_filter
+        uri: https://www.baidu.com/
+        predicates:
+          - Path=/test/rate-limit
+        filters:
+          - name: RateLimit
+            args:
+              appKey: sss
+              qps: 10
+      - id: log_record
+        uri: http://localhost:8080/test/logRecord/
+        predicates:
+          - Path=/logRecord
+        filters:
+          - name: LogRecord
+            args:
+              appKey: logRecord
+      - id: grpc_transfer_account
+        uri: grpc://grpc.server.grpc_TransferAccountService/transferAccount    #grpc在zk上注册的路由路径/具体的服务名称
+        predicates:
+          - Path=/transferAccount
+
+# 动态路由配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
