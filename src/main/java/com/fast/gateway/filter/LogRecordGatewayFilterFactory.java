@@ -42,6 +42,11 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
 
             return chain.filter(exchange).then(
                     Mono.defer(() -> {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         Long startTime = exchange.getAttribute(REQUESR_BEGIN_TIME);
                         String cost = String.valueOf(System.currentTimeMillis() - startTime);
                         System.out.println("cost:" + cost);

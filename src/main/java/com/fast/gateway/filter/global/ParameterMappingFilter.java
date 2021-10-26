@@ -47,6 +47,10 @@ public class ParameterMappingFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         MultiValueMap<String, String> map = exchange.getRequest().getQueryParams();
+        String param = map.getFirst(PARAM);
+        if (param == null) {
+            return chain.filter(exchange);
+        }
         String covertStr = covertToJson(map.getFirst(PARAM), 1);
         exchange.getAttributes().put(INPUT_JSON_STRING, covertStr);
 

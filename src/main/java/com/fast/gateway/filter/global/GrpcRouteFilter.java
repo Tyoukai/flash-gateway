@@ -2,6 +2,7 @@ package com.fast.gateway.filter.global;
 
 import com.fast.gateway.others.GlobalFilterOrderEnum;
 import com.fast.gateway.utils.GrpcUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -49,6 +50,12 @@ public class GrpcRouteFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        Route route = (Route) exchange.getAttributes().get(FILTER_CONFIG_NAME);
+        // http的请求直接过滤
+        if (StringUtils.equals(route.getUri().getScheme(), HTTP_SCHEME)) {
+            return chain.filter(exchange);
+        }
+
         Pair<String, String> metaData = getServiceName(exchange);
         Pair<String, String> serviceMetaData = getMethodMetaData(metaData);
 
