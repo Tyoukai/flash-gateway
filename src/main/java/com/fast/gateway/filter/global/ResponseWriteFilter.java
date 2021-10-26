@@ -4,8 +4,6 @@ import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter;
-import org.springframework.cloud.gateway.route.Route;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -15,8 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.fast.gateway.others.GlobalFilterOrderEnum.RESPONSE_WRITE;
-import static com.fast.gateway.utils.Constants.FILTER_CONFIG_NAME;
-import static com.fast.gateway.utils.Constants.HTTP_SCHEME;
 import static com.fast.gateway.utils.Constants.OUTPUT_JSON_STRING;
 
 
