@@ -30,11 +30,26 @@ import static com.fast.gateway.utils.Constants.SPLIT_POINT;
 public class GrpcUtils {
 
     /**
+     * 同步阻塞调用
+     *
+     *  缓存方法描述，有新服务产生时，只有第一次调用耗时会高一点
+     *
+     * @param ip
+     * @param port
+     * @param request 原始请求报文 json格式
+     * @param method 全限定方法名称
+     * @return
+     */
+    public static String blockingGrpcGeneralizedCall(String ip, String port, String request, String method) {
+        return null;
+    }
+
+    /**
      * grpc的泛化调用
      *
      * @param ip 具体服务的ip
      * @param port 具体服务的端口
-     * @param request 原始的请求曝欧文
+     * @param request 原始的请求报文
      * @param method 具体服务的方法名称
      * @return grpc的请求响应
      */
