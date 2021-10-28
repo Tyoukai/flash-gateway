@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 import static com.fast.gateway.utils.Constants.*;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 /**
  * grpc路由filter，用于将请求转发到具体的grpc服务
@@ -50,7 +51,7 @@ public class GrpcRouteFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Route route = (Route) exchange.getAttributes().get(FILTER_CONFIG_NAME);
+        Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
         // http的请求直接过滤
         if (StringUtils.equals(route.getUri().getScheme(), HTTP_SCHEME)) {
             return chain.filter(exchange);
@@ -78,7 +79,7 @@ public class GrpcRouteFilter implements GlobalFilter, Ordered {
      * @return
      */
     private Pair<String, String> getServiceName(ServerWebExchange exchange) {
-        Route route = (Route) exchange.getAttributes().get(FILTER_CONFIG_NAME);
+        Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
         if (route == null) {
             return null;
         }
