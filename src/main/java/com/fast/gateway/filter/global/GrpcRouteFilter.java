@@ -65,7 +65,8 @@ public class GrpcRouteFilter implements GlobalFilter, Ordered {
         String ip = serviceMetaData.getLeft().substring(0, index);
         String port = serviceMetaData.getLeft().substring(index + 1);
 
-        String response = GrpcUtils.grpcGeneralizedCall(ip, port, request, serviceMetaData.getRight());
+//        String response = GrpcUtils.grpcGeneralizedCall(ip, port, request, serviceMetaData.getRight());
+        String response = GrpcUtils.blockingGrpcGeneralizedCall(ip, port, request, serviceMetaData.getRight());
         exchange.getAttributes().put(GRPC_EXE_JSON_STRING, response);
         return chain.filter(exchange);
     }

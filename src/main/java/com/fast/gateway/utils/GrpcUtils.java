@@ -30,6 +30,12 @@ import static com.fast.gateway.utils.Constants.SPLIT_POINT;
 public class GrpcUtils {
 
     /**
+     * 缓存文件描述的方法，
+     * 全限定服务名称 -> 对应的文件描述
+     */
+    private static Map<String, Descriptors.FileDescriptor> CACHED_FILE_DESCRIPTOR = new ConcurrentHashMap<>();
+
+    /**
      * 同步阻塞调用
      *
      *  缓存方法描述，有新服务产生时，只有第一次调用耗时会高一点
@@ -41,7 +47,78 @@ public class GrpcUtils {
      * @return
      */
     public static String blockingGrpcGeneralizedCall(String ip, String port, String request, String method) {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(ip, Integer.valueOf(port))
+                .usePlaintext()
+                .build();
+
+        String fullServiceName = extraPrefix(method);
+        String methodName = extraSuffix(method);
+        String packageName = extraPackagePrefix(fullServiceName);
+        String serviceName = extraServiceName(fullServiceName);
+
+        // 根据响应解析 FileDescriptor
+        Descriptors.FileDescriptor fileDescriptor = getFileDescriptor(method, fullServiceName, packageName, serviceName, channel);
+
+        // 查找服务描述
+        Descriptors.ServiceDescriptor serviceDescriptor = fileDescriptor.getFile().findServiceByName(serviceName);
+        // 查找方法描述
+        Descriptors.MethodDescriptor methodDescriptor = serviceDescriptor.findMethodByName(methodName);
+
+        // 发起请求
+        try {
+            return executeCall(channel, fileDescriptor, methodDescriptor, request);
+        } catch (Exception e) {
+            // 出现异常后，将缓存的文件描述删除，异常可以是因为rpc文件描述发生了变化，
+            // 具体文件描述发生变化后会抛出什么异常之后再优化
+            CACHED_FILE_DESCRIPTOR.remove(fullServiceName);
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    private static Descriptors.FileDescriptor getFileDescriptor(String method, String fullServiceName, String packageName, String serviceName, ManagedChannel channel) {
+        Descriptors.FileDescriptor fileDescriptor = CACHED_FILE_DESCRIPTOR.computeIfAbsent(fullServiceName, (name) -> {
+            List<Descriptors.FileDescriptor> fileDescriptors = new ArrayList<>();
+            StreamObserver<ServerReflectionResponse> requestStreamObserver = new StreamObserver<ServerReflectionResponse>() {
+                @Override
+                public void onNext(ServerReflectionResponse response) {
+                    // 处理响应
+                    try {
+                        if (response.getMessageResponseCase() == ServerReflectionResponse.MessageResponseCase.FILE_DESCRIPTOR_RESPONSE) {
+                            List<ByteString> fileDescriptorProtoList = response.getFileDescriptorResponse().getFileDescriptorProtoList();
+                            // 根据响应解析 FileDescriptor
+                            fileDescriptors.add(0, getFileDescriptor(fileDescriptorProtoList, packageName, serviceName));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                @Override
+                public void onError(Throwable t) {
+                    t.printStackTrace();
+                }
+                @Override
+                public void onCompleted() {
+                    System.out.println("onCompleted");
+                }
+            };
+
+            ServerReflectionGrpc.ServerReflectionStub stub = ServerReflectionGrpc.newStub(channel);
+            StreamObserver<ServerReflectionRequest> client= stub.serverReflectionInfo(requestStreamObserver);
+
+            ServerReflectionRequest serverReflectionRequest = ServerReflectionRequest.newBuilder()
+                    .setFileContainingSymbol(method.replace('/', '.'))
+                    .build();
+
+            client.onNext(serverReflectionRequest);
+            try {
+                channel.awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return fileDescriptors.get(0);
+        });
+        return fileDescriptor;
     }
 
     /**
