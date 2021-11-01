@@ -19,18 +19,19 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fast.gateway.utils.Constants.SPILT_SLASH;
+
 
 /**
  * 动态路由配置，存储介质zookeeper
  */
-//@Component
+@Component
 public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, ApplicationEventPublisherAware {
 
     private ApplicationEventPublisher applicationEventPublisher;
     private String path = "/gateway";
     private CuratorFramework curatorClient;
     private String zookeeperAddress = "42.192.49.234:2181";
-    private String sep = "/";
 
     @PostConstruct
     public void init() throws Exception {
@@ -75,7 +76,7 @@ public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, A
             childIds.forEach(childId -> {
                 String routeStr;
                 try {
-                    routeStr = new String(curatorClient.getData().forPath(path + sep + childId));
+                    routeStr = new String(curatorClient.getData().forPath(path + SPILT_SLASH + childId));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
