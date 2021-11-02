@@ -17,11 +17,11 @@ public class MonoDemo {
 //        map();
 //        then();
 //        publishOn();
-//        doOnNext();
+        doOnNext();
 //        onErrorMap();
 //        fromCallable();
 //        defer();
-        timeout();
+//        timeout();
     }
 
     public static void fromCallable() {
@@ -79,6 +79,11 @@ public class MonoDemo {
                     String t = s + "ttt";
                     map.put(t, t);
                 });
+
+//        Mono.just("sss")
+//                .subscribe(new Observer<String>() {
+//
+//                })
 
         System.out.println(map);
     }
