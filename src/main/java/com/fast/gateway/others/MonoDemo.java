@@ -5,7 +5,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -17,11 +19,12 @@ public class MonoDemo {
 //        map();
 //        then();
 //        publishOn();
-        doOnNext();
+//        doOnNext();
 //        onErrorMap();
 //        fromCallable();
 //        defer();
 //        timeout();
+        diffWithDoOnSuccessAndDoOnNext();
     }
 
     public static void fromCallable() {
@@ -69,15 +72,37 @@ public class MonoDemo {
                 .subscribe(System.out::println);
     }
 
+    public static void diffWithDoOnSuccessAndDoOnNext() {
+        Mono.just("sss")
+                .doOnNext(System.out::println)
+                .flatMap(i -> Mono.empty())
+                .doOnNext(s -> {
+                    System.out.println("is called");
+                })
+                .doOnSuccess(t -> {
+                    System.out.println("doOnSuccess");
+                })
+                .block();
+    }
+
     public static void doOnNext() {
         Map<String, String> map = new HashMap<>();
+        List<String> list = new ArrayList<>();
         Mono.just("sss")
+                .map(str -> {
+                    str = str + "map";
+                    list.add(str);
+                    map.put(str, str);
+                    return str;
+                })
                 .doOnNext(s -> {
                     map.put(s, s);
+                    list.add(s);
                 })
                 .subscribe(s -> {
                     String t = s + "ttt";
                     map.put(t, t);
+                    list.add(t);
                 });
 
 //        Mono.just("sss")
@@ -86,6 +111,7 @@ public class MonoDemo {
 //                })
 
         System.out.println(map);
+        System.out.println(list);
     }
 
     public static void onErrorMap() {
