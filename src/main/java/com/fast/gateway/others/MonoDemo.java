@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class MonoDemo {
 
     public static void main(String[] args) {
-//        doOnErrorOrSuccess();
+        doOnErrorOrSuccess();
 //        map();
 //        then();
 //        publishOn();
@@ -24,13 +24,19 @@ public class MonoDemo {
 //        fromCallable();
 //        defer();
 //        timeout();
-        diffWithDoOnSuccessAndDoOnNext();
+//        diffWithDoOnSuccessAndDoOnNext();
+//        fromCallable();
     }
 
     public static void fromCallable() {
-        System.out.println("start:" + System.currentTimeMillis());
-        Mono<String> s = Mono.fromCallable(() -> "a");
+        long start = System.currentTimeMillis();
+        Mono.fromCallable(() -> {
+            Thread.sleep(1000);
+            System.out.println("当前线程Id:" + Thread.currentThread().getId() + ", 耗时：" + (System.currentTimeMillis() - start));
+            return "a";
+        }).subscribe(System.out::println);
 
+        System.out.println("main 线程id：" + Thread.currentThread().getId() + ", 耗时：" + (System.currentTimeMillis() - start));
     }
 
     public static void timeout() {
@@ -45,13 +51,7 @@ public class MonoDemo {
     }
 
     public static void defer() {
-        Supplier<? extends Mono<? extends Integer>> supplier = new Supplier() {
-
-            @Override
-            public Mono<Integer> get() {
-                return Mono.just(1111);
-            }
-        };
+        Supplier<? extends Mono<? extends Integer>> supplier = () -> Mono.just(1111);
         Mono<Integer> integerMono = Mono.defer(supplier);
         integerMono.subscribe(System.out::println);
 
@@ -72,6 +72,10 @@ public class MonoDemo {
                 .subscribe(System.out::println);
     }
 
+    /**
+     * doOnSuccess:在序列发布成功后触发，序列结果可能为T或null
+     * doOnNext:在序列发布后触发，序列的结果必须为T才能触发
+     */
     public static void diffWithDoOnSuccessAndDoOnNext() {
         Mono.just("sss")
                 .doOnNext(System.out::println)
