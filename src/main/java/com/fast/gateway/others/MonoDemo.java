@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class MonoDemo {
 
     public static void main(String[] args) {
-        doOnErrorOrSuccess();
+//        doOnErrorOrSuccess();
 //        map();
 //        then();
 //        publishOn();
@@ -26,6 +26,13 @@ public class MonoDemo {
 //        timeout();
 //        diffWithDoOnSuccessAndDoOnNext();
 //        fromCallable();
+        subscribeTheory();
+    }
+
+    public static void subscribeTheory() {
+        Flux.just("tom", "jack", "allen")
+                .map(s -> s.concat("@qq.com"))
+                .subscribe(System.out::println);
     }
 
     public static void fromCallable() {
@@ -78,6 +85,7 @@ public class MonoDemo {
      */
     public static void diffWithDoOnSuccessAndDoOnNext() {
         Mono.just("sss")
+                .doOnNext(System.out::println)
                 .doOnNext(System.out::println)
                 .flatMap(i -> Mono.empty())
                 .doOnNext(s -> {
