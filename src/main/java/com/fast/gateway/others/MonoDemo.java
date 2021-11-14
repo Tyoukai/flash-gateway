@@ -1,5 +1,7 @@
 package com.fast.gateway.others;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -32,6 +34,14 @@ public class MonoDemo {
     public static void subscribeTheory() {
         Flux.just("tom", "jack", "allen")
                 .map(s -> s.concat("@qq.com"))
+                .filter(s -> s.length() > 3)
+                .subscribe(System.out::println);
+    }
+
+    public static void subscribeMono() {
+        Mono.just("tom")
+                .map(s -> s.concat("@qq.com"))
+                .filter(s -> s.length() > 3)
                 .subscribe(System.out::println);
     }
 
