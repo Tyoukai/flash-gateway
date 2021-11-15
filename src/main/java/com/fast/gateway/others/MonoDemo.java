@@ -28,12 +28,43 @@ public class MonoDemo {
 //        timeout();
 //        diffWithDoOnSuccessAndDoOnNext();
 //        fromCallable();
-        subscribeTheory();
+//        subscribeTheory();
+        threadTest();
+    }
+
+    public static void threadTest() {
+        long s = System.currentTimeMillis();
+
+        System.out.println("当前线程：" + Thread.currentThread().getName());
+
+        for(int i = 0; i < 10; i++) {
+            Mono.just("Tom")
+                    .map(s1 -> {
+                        System.out.println("map 当前线程：" + Thread.currentThread().getName());
+                        return s1 + "111";
+                    })
+                    .publishOn(Schedulers.newElastic("publishOn-"))
+                    .map(str -> {
+                        System.out.println("map1当前线程：" + Thread.currentThread().getName());
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        return str.concat("@qq.com");
+                    })
+                    .subscribe(con -> {
+                        System.out.println("所花费时间：" + (System.currentTimeMillis() - s) + ",最终运行结果：" + con + "，当前所在线程：" + Thread.currentThread().getName());
+                    });
+        }
+
+        System.out.println("花费时间：" + (System.currentTimeMillis() - s));
     }
 
     public static void subscribeTheory() {
         Flux.just("tom", "jack", "allen")
                 .map(s -> s.concat("@qq.com"))
+                .publishOn(Schedulers.elastic())
                 .filter(s -> s.length() > 3)
                 .subscribe(System.out::println);
     }
