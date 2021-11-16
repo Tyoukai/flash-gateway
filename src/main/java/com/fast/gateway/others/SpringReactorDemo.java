@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-public class MonoDemo {
+public class SpringReactorDemo {
 
     public static void main(String[] args) {
 //        doOnErrorOrSuccess();
@@ -27,9 +27,10 @@ public class MonoDemo {
 //        defer();
 //        timeout();
 //        diffWithDoOnSuccessAndDoOnNext();
-//        fromCallable();
+        fromCallable();
 //        subscribeTheory();
-        threadTest();
+//        threadTest();
+//        threadTest1();
     }
 
     public static void threadTest() {
@@ -38,7 +39,7 @@ public class MonoDemo {
         System.out.println("当前线程：" + Thread.currentThread().getName());
 
         for(int i = 0; i < 10; i++) {
-            Mono.just("Tom")
+            Flux.just("Tom")
                     .map(s1 -> {
                         System.out.println("map 当前线程：" + Thread.currentThread().getName());
                         return s1 + "111";
@@ -58,7 +59,35 @@ public class MonoDemo {
                     });
         }
 
-        System.out.println("花费时间：" + (System.currentTimeMillis() - s));
+        System.out.println("花费时间：" + (System.currentTimeMillis() - s) + ", 当前所在线程:" + Thread.currentThread().getName());
+    }
+
+    public static void threadTest1() {
+        long s = System.currentTimeMillis();
+
+        System.out.println("当前线程：" + Thread.currentThread().getName());
+
+        for(int i = 0; i < 10; i++) {
+            Flux.just("Tom")
+                    .map(s1 -> {
+                        System.out.println("map 当前线程：" + Thread.currentThread().getName());
+                        return s1 + "111";
+                    })
+                    .map(str -> {
+                        System.out.println("map1当前线程：" + Thread.currentThread().getName());
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        return str.concat("@qq.com");
+                    })
+                    .subscribe(con -> {
+                        System.out.println("所花费时间：" + (System.currentTimeMillis() - s) + ",最终运行结果：" + con + "，当前所在线程：" + Thread.currentThread().getName());
+                    });
+        }
+
+        System.out.println("花费时间：" + (System.currentTimeMillis() - s) + ",当前所在线程：" + Thread.currentThread().getName());
     }
 
     public static void subscribeTheory() {
@@ -80,11 +109,11 @@ public class MonoDemo {
         long start = System.currentTimeMillis();
         Mono.fromCallable(() -> {
             Thread.sleep(1000);
-            System.out.println("当前线程Id:" + Thread.currentThread().getId() + ", 耗时：" + (System.currentTimeMillis() - start));
+            System.out.println("当前线程:" + Thread.currentThread().getName() + ", 耗时：" + (System.currentTimeMillis() - start));
             return "a";
         }).subscribe(System.out::println);
 
-        System.out.println("main 线程id：" + Thread.currentThread().getId() + ", 耗时：" + (System.currentTimeMillis() - start));
+        System.out.println("当前线程:：" + Thread.currentThread().getName() + ", 耗时：" + (System.currentTimeMillis() - start));
     }
 
     public static void timeout() {
