@@ -125,12 +125,20 @@
             <version>3.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.dianping.cat</groupId>
+            <artifactId>cat-client</artifactId>
+            <version>3.0.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/lib/cat-client-3.0.0.jar</systemPath>
+        </dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
     <build>
         <extensions>
@@ -146,6 +154,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>com.fast.gateway.Application</mainClass>
+					<!-- 将本地的resources/lib下的jar包引入进来 -->
+					<includeSystemScope>true</includeSystemScope>
 				</configuration>
 			</plugin>
             <plugin>
