@@ -31,7 +31,7 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
                 .setPassword("hust123456");
         redisClient = Redisson.create(config);
 
-        executorService.scheduleAtFixedRate(() -> syncQuotaData(), 1000, 1000, TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(this::syncQuotaData, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
