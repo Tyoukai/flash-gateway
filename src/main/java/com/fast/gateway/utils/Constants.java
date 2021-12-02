@@ -10,4 +10,5 @@ public class Constants {
     public static String SPLIT_COLON = ":";
     public static String SPILT_SLASH = "/";
     public static String HTTP_SCHEME = "http";
+    public static String SPLIT_UNDERLINE = "_";
 }
