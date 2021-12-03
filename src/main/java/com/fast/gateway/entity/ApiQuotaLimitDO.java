@@ -1,9 +1,6 @@
 package com.fast.gateway.entity;
 
-import lombok.Data;
-
-@Data
-public class ApiQuotaLimit {
+public class ApiQuotaLimitDO {
     private long id;
     private String api;
     private String quotaKey;
@@ -11,7 +8,6 @@ public class ApiQuotaLimit {
     private int timeSpan;
     private long createTime;
     private long updateTime;
-    private long expireTime;
 
     public long getId() {
         return id;
@@ -67,13 +63,5 @@ public class ApiQuotaLimit {
 
     public void setUpdateTime(long updateTime) {
         this.updateTime = updateTime;
-    }
-
-    public long getExpireTime() {
-        return expireTime;
-    }
-
-    public void setExpireTime(long expireTime) {
-        this.expireTime = expireTime;
     }
 }
