@@ -14,15 +14,18 @@ public class QuotaLimitItem {
     private int latestRemoteCount;
     // 总额度
     private int totalQuota;
-    // 过期的时间
+    // 过期的时间戳
     private long expireTime;
+    // 开始计数的时间戳
+    private long startTime;
 
-    public QuotaLimitItem(String key, int localCount, int latestRemoteCount, int totalQuota, long expireTime) {
+    public QuotaLimitItem(String key, int localCount, int latestRemoteCount, int totalQuota, long expireTime, long startTime) {
         this.key = key;
         this.localCount = new AtomicInteger(localCount);
         this.latestRemoteCount = latestRemoteCount;
         this.totalQuota = totalQuota;
         this.expireTime = expireTime;
+        this.startTime = startTime;
     }
 
     public int addAndGet(int delta) {
@@ -67,5 +70,13 @@ public class QuotaLimitItem {
 
     public void setExpireTime(long expireTime) {
         this.expireTime = expireTime;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }

@@ -4,10 +4,10 @@ import com.fast.gateway.others.QuotaLimitHelper;
 import com.fast.gateway.utils.GatewayContextUtils;
 import com.fast.gateway.utils.RewriteResponseUtils;
 import com.google.common.base.Strings;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.cloud.gateway.route.Route;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -18,9 +18,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.fast.gateway.utils.Constants.SPLIT_COLON;
-import static com.fast.gateway.utils.Constants.SPLIT_COMMA;
-import static com.fast.gateway.utils.Constants.SPLIT_SEMICOLON;
+import static com.fast.gateway.utils.Constants.*;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 /**
  * 网关限额过滤器
@@ -28,29 +27,23 @@ import static com.fast.gateway.utils.Constants.SPLIT_SEMICOLON;
 //@Component
 public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<QuotaLimitGatewayFilterFactory.Config> {
 
-    private static RedissonClient redisClient;
-
     private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
+    @Autowired
     private QuotaLimitHelper quotaLimitHelper;
+
 
     @PostConstruct
     public void init() {
-        // 1、初始化redis
-        org.redisson.config.Config config = new org.redisson.config.Config();
-        config.useReplicatedServers()
-                .addNodeAddress("redis://101.43.59.148:6379")
-                .setPassword("hust123456");
-        redisClient = Redisson.create(config);
 
-        // 2、初始化本地计数器
-        quotaLimitHelper = QuotaLimitHelper.getInstance();
+        // 1、初始化远程同步任务
+        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.pullRemoteToLocalAndPushLocalToRemote(), 1000, 1000, TimeUnit.MILLISECONDS);
 
-        // 3、初始化远程同步任务
-        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.pullRemoteToLocalAndPushLocalToRemote(redisClient), 1000, 1000, TimeUnit.MILLISECONDS);
-
-        // 4、删除本地过期的限额配置
+        // 2、删除本地过期的限额配置
         executorService.scheduleAtFixedRate(() -> quotaLimitHelper.removeLocalExpiredQuotaConfig(), 2000, 2000, TimeUnit.MICROSECONDS);
+
+        // 3、同步数据库中过期时间和总额度
+        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.syncExpireTimeAndTotalQuota(), 0, 1000, TimeUnit.MICROSECONDS);
     }
 
     @Override
@@ -67,9 +60,18 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
         };
     }
 
+    /**
+     * 规则：api名称_key1:value1;key2:value2
+     *
+     * @param key
+     * @param exchange
+     * @return
+     */
     private String buildKey(String key, ServerWebExchange exchange) {
+        Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
+        String api = route.getUri().getAuthority();
         String[] keyArray = Strings.nullToEmpty(key).split(SPLIT_COMMA);
-        return Arrays.stream(keyArray)
+        return api + SPLIT_UNDERLINE + Arrays.stream(keyArray)
                 .map(k -> k.trim() + SPLIT_COLON + GatewayContextUtils.getParam(exchange, k))
                 .sorted(String::compareTo)
                 .collect(Collectors.joining(SPLIT_SEMICOLON));

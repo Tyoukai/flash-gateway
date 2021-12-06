@@ -1,32 +1,41 @@
 package com.fast.gateway.others;
 
+import com.fast.gateway.entity.ApiQuotaLimitDO;
+import com.fast.gateway.service.ApiQuotaLimitService;
+import org.redisson.Redisson;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class QuotaLimitHelper {
-    private static volatile QuotaLimitHelper instance;
+
+    private static RedissonClient redisClient;
+
+    @Autowired
+    private ApiQuotaLimitService apiQuotaLimitService;
 
     private Map<String, QuotaLimitItem> quotaMap = new ConcurrentHashMap<>();
 
-    private QuotaLimitHelper() {}
-
-    public static QuotaLimitHelper getInstance() {
-        if (instance == null) {
-            synchronized (QuotaLimitHelper.class) {
-                if (instance == null) {
-                    instance = new QuotaLimitHelper();
-                }
-            }
-        }
-        return instance;
+    @PostConstruct
+    public void init() {
+        Config config = new Config();
+        config.useReplicatedServers()
+                .addNodeAddress("redis://101.43.59.148:6379")
+                .setPassword("hust123456");
+        redisClient = Redisson.create(config);
     }
 
     public boolean tryAcquire(String key, int delta) {
         long now = System.currentTimeMillis();
-        QuotaLimitItem item = quotaMap.computeIfAbsent(key, k -> new QuotaLimitItem(k, 0, 0, -1, 0));
+        QuotaLimitItem item = quotaMap.computeIfAbsent(key, k -> new QuotaLimitItem(k, 0, 0, -1, 0, now));
 
         // 刚初始化的限额，直接加额度然后返回
         if (item.getTotalQuota() < 0 || item.getExpireTime() <= 0) {
@@ -46,16 +55,22 @@ public class QuotaLimitHelper {
     /**
      * 同步远程限额情况到本地，同时将本地限额情况同步到远程
      */
-    public void pullRemoteToLocalAndPushLocalToRemote(RedissonClient redisClient) {
+    public void pullRemoteToLocalAndPushLocalToRemote() {
         quotaMap.values().forEach(item -> {
             int localCount = item.getLocalCount().get();
+            // 1、本机新增的调用次数
             int localDelta = localCount - item.getLatestRemoteCount();
-
-            RMap<Object, Object> quotaMap = redisClient.getMap(item.getKey());
-//            quotaMap.addAndGet()
-            // todo :接下来完成
-
-
+            RMap<Object, Object> quotaMap = redisClient.getMap(item.getKey(), new StringCodec("utf-8"));
+            // 2、将本机新增次数同步到远程
+            quotaMap.addAndGet("usedQuota", localDelta);
+            // 3、获取远程最新使用的额度数
+            int remoteCount = (int)quotaMap.get("usedQuota");
+            // 4、计算出此刻其他机器调用的额度数
+            int remoteDelta = remoteCount - localCount;
+            // 5、将本地远程值更新为远端的最新值
+            item.setLatestRemoteCount(remoteCount);
+            // 6、将本地已经调用次数加上其他机器使用的额度
+            item.getLocalCount().addAndGet(remoteDelta);
 
         });
     }
@@ -66,6 +81,27 @@ public class QuotaLimitHelper {
     public void removeLocalExpiredQuotaConfig() {
         // 初始化的变量不删除，过期时间大于当前时间的不删除
         quotaMap.values().removeIf(item -> (item.getExpireTime() > 0 && item.getExpireTime() < System.currentTimeMillis()));
+    }
+
+    /**
+     * 同步本地数据库中不同维度key的过期时间和总的额度
+     */
+    public void syncExpireTimeAndTotalQuota() {
+        Map<String, ApiQuotaLimitDO> apiQuotaLimitDOMap = apiQuotaLimitService.listAllQuotaLimitConfig();
+        apiQuotaLimitDOMap.forEach((k, v) -> {
+            // 1、更新本地缓存的过期时间和总额度
+            long now = System.currentTimeMillis();
+            QuotaLimitItem item = quotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), now + v.getTimeSpan(), now));
+            item.setExpireTime(item.getStartTime() + v.getTimeSpan());
+            item.setTotalQuota(v.getQuota());
+
+            // 2、更新redis中的相关数据
+            RMap<Object, Object> quotaInRedis = redisClient.getMap(k, new StringCodec("utf-8"));
+            quotaInRedis.put("totalQuota", item.getTotalQuota());
+            quotaInRedis.put("expireTime", item.getExpireTime());
+            quotaInRedis.put("startTime", item.getStartTime());
+            quotaInRedis.expireAt(item.getExpireTime());
+        });
     }
 
 
