@@ -24,26 +24,33 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 /**
  * 网关限额过滤器
  */
-//@Component
+@Component
 public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<QuotaLimitGatewayFilterFactory.Config> {
 
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
 
     @Autowired
     private QuotaLimitHelper quotaLimitHelper;
+
+    public QuotaLimitGatewayFilterFactory() {
+        super(Config.class);
+    }
 
 
     @PostConstruct
     public void init() {
 
         // 1、初始化远程同步任务
-        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.pullRemoteToLocalAndPushLocalToRemote(), 1000, 1000, TimeUnit.MILLISECONDS);
+        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.pullRemoteToLocalAndPushLocalToRemote(),
+                0, 1, TimeUnit.SECONDS);
 
         // 2、删除本地过期的限额配置
-        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.removeLocalExpiredQuotaConfig(), 2000, 2000, TimeUnit.MICROSECONDS);
+        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.removeLocalExpiredQuotaConfig(),
+                0, 2, TimeUnit.SECONDS);
 
         // 3、同步数据库中过期时间和总额度
-        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.syncExpireTimeAndTotalQuota(), 0, 1000, TimeUnit.MICROSECONDS);
+        executorService.scheduleAtFixedRate(() -> quotaLimitHelper.syncExpireTimeAndTotalQuota(),
+                0, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -61,7 +68,7 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
     }
 
     /**
-     * 规则：api名称_key1:value1;key2:value2
+     * 规则：id_key1:value1;key2:value2
      *
      * @param key
      * @param exchange
@@ -69,9 +76,9 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
      */
     private String buildKey(String key, ServerWebExchange exchange) {
         Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
-        String api = route.getUri().getAuthority();
+        String id = route.getId();
         String[] keyArray = Strings.nullToEmpty(key).split(SPLIT_COMMA);
-        return api + SPLIT_UNDERLINE + Arrays.stream(keyArray)
+        return id + SPLIT_UNDERLINE + Arrays.stream(keyArray)
                 .map(k -> k.trim() + SPLIT_COLON + GatewayContextUtils.getParam(exchange, k))
                 .sorted(String::compareTo)
                 .collect(Collectors.joining(SPLIT_SEMICOLON));

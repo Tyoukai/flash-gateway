@@ -18,8 +18,13 @@ public class TestController {
     private ApiQuotaLimitService apiQuotaLimitService;
 
     @RequestMapping("/quota/config")
-    public Mono<Map<String, ApiQuotaLimitDO>> getQuotaConfig() {
+    public Mono<Map<String, ApiQuotaLimitDO>> listQuotaConfig() {
         return Mono.just(apiQuotaLimitService.listAllQuotaLimitConfig());
+    }
+
+    @RequestMapping("/quota/test")
+    public Mono<String> quotaLimitTestApi() {
+        return Mono.just("quota.test");
     }
 
     @RequestMapping("/rate")

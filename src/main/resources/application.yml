@@ -28,7 +28,7 @@ spring:
               appKey: sss
               qps: 10
       - id: log_record
-        uri: http://localhost:8080/test/logRecord/
+        uri: http://localhost:8100/test/logRecord/
         predicates:
           - Path=/logRecord
         filters:
@@ -39,6 +39,14 @@ spring:
         uri: grpc://grpc.server.grpc_TransferAccountService/transferAccount    #grpc在zk上注册的路由路径/具体的服务名称
         predicates:
           - Path=/transferAccount
+      - id: quota.limit.test.api
+        uri: http://localhost:8100/test/quota/test/
+        predicates:
+          - Path=/gateway/quotaTest
+        filters:
+          - name: QuotaLimit
+            args:
+              keys: userId;appkey,token
 
 # 动态路由配置
 management:
