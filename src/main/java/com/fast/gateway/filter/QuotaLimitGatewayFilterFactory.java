@@ -27,7 +27,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 @Component
 public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<QuotaLimitGatewayFilterFactory.Config> {
 
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(10);
 
     @Autowired
     private QuotaLimitHelper quotaLimitHelper;

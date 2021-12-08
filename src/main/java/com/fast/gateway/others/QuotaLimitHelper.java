@@ -19,6 +19,8 @@ public class QuotaLimitHelper {
 
     private static RedissonClient redisClient;
 
+    private static final int SECOND_TO_MILLIS = 1000;
+
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
 
@@ -91,8 +93,8 @@ public class QuotaLimitHelper {
         apiQuotaLimitDOMap.forEach((k, v) -> {
             // 1、更新本地缓存的过期时间和总额度
             long now = System.currentTimeMillis();
-            QuotaLimitItem item = quotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), now + v.getTimeSpan(), now));
-            item.setExpireTime(item.getStartTime() + v.getTimeSpan());
+            QuotaLimitItem item = quotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), -1, now));
+            item.setExpireTime(item.getStartTime() + v.getTimeSpan() * SECOND_TO_MILLIS);
             item.setTotalQuota(v.getQuota());
 
             // 2、更新redis中的相关数据
