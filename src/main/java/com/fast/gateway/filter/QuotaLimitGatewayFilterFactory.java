@@ -42,7 +42,7 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
 
         // 1、初始化远程同步任务
         executorService.scheduleAtFixedRate(() -> quotaLimitHelper.pullRemoteToLocalAndPushLocalToRemote(),
-                0, 1, TimeUnit.SECONDS);
+                2, 1, TimeUnit.SECONDS);
 
         // 2、删除本地过期的限额配置
         executorService.scheduleAtFixedRate(() -> quotaLimitHelper.removeLocalExpiredQuotaConfig(),

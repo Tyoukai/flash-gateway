@@ -24,7 +24,7 @@ public class QuotaLimitHelper {
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
 
-    private Map<String, QuotaLimitItem> quotaMap = new ConcurrentHashMap<>();
+    private Map<String, QuotaLimitItem> localCacheQuotaMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -37,11 +37,9 @@ public class QuotaLimitHelper {
 
     public boolean tryAcquire(String key, int delta) {
         long now = System.currentTimeMillis();
-        QuotaLimitItem item = quotaMap.computeIfAbsent(key, k -> new QuotaLimitItem(k, 0, 0, -1, 0, now));
-
-        // 刚初始化的限额，直接加额度然后返回
-        if (item.getTotalQuota() < 0 || item.getExpireTime() <= 0) {
-            item.addAndGet(delta);
+        QuotaLimitItem item = localCacheQuotaMap.get(key);
+        // 未初始化过，表示没有配置限额，直接放行
+        if (item == null) {
             return true;
         }
 
@@ -58,15 +56,15 @@ public class QuotaLimitHelper {
      * 同步远程限额情况到本地，同时将本地限额情况同步到远程
      */
     public void pullRemoteToLocalAndPushLocalToRemote() {
-        quotaMap.values().forEach(item -> {
+        localCacheQuotaMap.values().forEach(item -> {
             int localCount = item.getLocalCount().get();
             // 1、本机新增的调用次数
             int localDelta = localCount - item.getLatestRemoteCount();
-            RMap<Object, Object> quotaMap = redisClient.getMap(item.getKey(), new StringCodec("utf-8"));
+            RMap<Object, Object> quotaInRedis = redisClient.getMap(item.getKey(), new StringCodec("utf-8"));
             // 2、将本机新增次数同步到远程
-            quotaMap.addAndGet("usedQuota", localDelta);
+            quotaInRedis.addAndGet("usedQuota", localDelta);
             // 3、获取远程最新使用的额度数
-            int remoteCount = (int)quotaMap.get("usedQuota");
+            int remoteCount = Integer.parseInt(quotaInRedis.get("usedQuota").toString());
             // 4、计算出此刻其他机器调用的额度数
             int remoteDelta = remoteCount - localCount;
             // 5、将本地远程值更新为远端的最新值
@@ -82,7 +80,7 @@ public class QuotaLimitHelper {
      */
     public void removeLocalExpiredQuotaConfig() {
         // 初始化的变量不删除，过期时间大于当前时间的不删除
-        quotaMap.values().removeIf(item -> (item.getExpireTime() > 0 && item.getExpireTime() < System.currentTimeMillis()));
+        localCacheQuotaMap.values().removeIf(item -> (item.getExpireTime() > 0 && item.getExpireTime() < System.currentTimeMillis()));
     }
 
     /**
@@ -93,7 +91,7 @@ public class QuotaLimitHelper {
         apiQuotaLimitDOMap.forEach((k, v) -> {
             // 1、更新本地缓存的过期时间和总额度
             long now = System.currentTimeMillis();
-            QuotaLimitItem item = quotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), -1, now));
+            QuotaLimitItem item = localCacheQuotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), -1, now));
             item.setExpireTime(item.getStartTime() + v.getTimeSpan() * SECOND_TO_MILLIS);
             item.setTotalQuota(v.getQuota());
 
