@@ -36,13 +36,13 @@ public class QuotaLimitHelper {
     }
 
     public boolean tryAcquire(String key, int delta) {
-        long now = System.currentTimeMillis();
         QuotaLimitItem item = localCacheQuotaMap.get(key);
         // 未初始化过，表示没有配置限额，直接放行
         if (item == null) {
             return true;
         }
 
+        long now = System.currentTimeMillis();
         if (now < item.getExpireTime()) {
             int latestLocalCount  = item.addAndGet(delta);
             // 当前最新使用额度是否小于等于总额度
