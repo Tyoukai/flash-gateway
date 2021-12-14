@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static com.fast.gateway.utils.Constants.SPLIT_UNDERLINE;
 
 @Component
 public class QuotaLimitHelper {
@@ -20,11 +23,20 @@ public class QuotaLimitHelper {
     private static RedissonClient redisClient;
 
     private static final int SECOND_TO_MILLIS = 1000;
+    private static final int GAP = 100000;
 
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
 
-    private Map<String, QuotaLimitItem> localCacheQuotaMap = new ConcurrentHashMap<>();
+    /**
+     * 本地限额缓存
+     *
+     * key: prefixKey
+     * value:
+     *          key: prefixKey_tailKey
+     *          value: 真实的缓存对象
+     */
+    private Map<String, ConcurrentHashMap<String, QuotaLimitItem>> localCacheQuotaMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -36,13 +48,22 @@ public class QuotaLimitHelper {
     }
 
     public boolean tryAcquire(String key, int delta) {
-        QuotaLimitItem item = localCacheQuotaMap.get(key);
+        Map<String, QuotaLimitItem> quotaLimitItemMap = localCacheQuotaMap.get(key);
         // 未初始化过，表示没有配置限额，直接放行
+        if (quotaLimitItemMap == null || quotaLimitItemMap.size() <= 0) {
+            return true;
+        }
+
+        String firstKey = quotaLimitItemMap.keySet().stream().findFirst().get();
+        long timeSpan = quotaLimitItemMap.get(firstKey).getTailKey();
+
+        long now = System.currentTimeMillis();
+        QuotaLimitItem item = quotaLimitItemMap.get(key + SPLIT_UNDERLINE + now / timeSpan);
+        // 当前对应的item还未创建
         if (item == null) {
             return true;
         }
 
-        long now = System.currentTimeMillis();
         if (now < item.getExpireTime()) {
             int latestLocalCount  = item.addAndGet(delta);
             // 当前最新使用额度是否小于等于总额度
@@ -56,22 +77,24 @@ public class QuotaLimitHelper {
      * 同步远程限额情况到本地，同时将本地限额情况同步到远程
      */
     public void pullRemoteToLocalAndPushLocalToRemote() {
-        localCacheQuotaMap.values().forEach(item -> {
-            int localCount = item.getLocalCount().get();
-            // 1、本机新增的调用次数
-            int localDelta = localCount - item.getLatestRemoteCount();
-            RMap<Object, Object> quotaInRedis = redisClient.getMap(item.getKey(), new StringCodec("utf-8"));
-            // 2、将本机新增次数同步到远程
-            quotaInRedis.addAndGet("usedQuota", localDelta);
-            // 3、获取远程最新使用的额度数
-            int remoteCount = Integer.parseInt(quotaInRedis.get("usedQuota").toString());
-            // 4、计算出此刻其他机器调用的额度数
-            int remoteDelta = remoteCount - localCount;
-            // 5、将本地远程值更新为远端的最新值
-            item.setLatestRemoteCount(remoteCount);
-            // 6、将本地已经调用次数加上其他机器使用的额度
-            item.getLocalCount().addAndGet(remoteDelta);
+        localCacheQuotaMap.values().forEach(itemMap -> {
+            itemMap.values().forEach(item -> {
+                int localCount = item.getLocalCount().get();
+                // 1、本机新增的调用次数
+                int localDelta = localCount - item.getLatestRemoteCount();
+                RMap<Object, Object> quotaInRedis = redisClient.getMap(item.buildKey(), new StringCodec("utf-8"));
+                // 2、将本机新增次数同步到远程
+                quotaInRedis.addAndGet("usedQuota", localDelta);
+                // 3、获取远程最新使用的额度数
+                int remoteCount = Integer.parseInt(quotaInRedis.get("usedQuota").toString());
+                // 4、计算出此刻其他机器调用的额度数
+                int remoteDelta = remoteCount - localCount;
+                // 5、将本地远程值更新为远端的最新值
+                item.setLatestRemoteCount(remoteCount);
+                // 6、将本地已经调用次数加上其他机器使用的额度
+                item.getLocalCount().addAndGet(remoteDelta);
 
+            });
         });
     }
 
@@ -80,7 +103,8 @@ public class QuotaLimitHelper {
      */
     public void removeLocalExpiredQuotaConfig() {
         // 初始化的变量不删除，过期时间大于当前时间的不删除
-        localCacheQuotaMap.values().removeIf(item -> (item.getExpireTime() > 0 && item.getExpireTime() < System.currentTimeMillis()));
+        localCacheQuotaMap.values().forEach(realMap ->
+            realMap.values().removeIf(item -> (item.getExpireTime() > 0 && item.getExpireTime() < System.currentTimeMillis())));
     }
 
     /**
@@ -91,16 +115,27 @@ public class QuotaLimitHelper {
         apiQuotaLimitDOMap.forEach((k, v) -> {
             // 1、更新本地缓存的过期时间和总额度
             long now = System.currentTimeMillis();
-            QuotaLimitItem item = localCacheQuotaMap.computeIfAbsent(k, key -> new QuotaLimitItem(key, 0, 0, v.getQuota(), -1, now));
+            long tailKey = TimeUnit.MILLISECONDS.toSeconds(now) / v.getTimeSpan();
+            ConcurrentHashMap<String, QuotaLimitItem> quotaLimitItemMap = localCacheQuotaMap.get(k);
+            if (quotaLimitItemMap == null) {
+                quotaLimitItemMap = new ConcurrentHashMap<>();
+                localCacheQuotaMap.put(k, quotaLimitItemMap);
+            }
+
+            String localKey = k + SPLIT_UNDERLINE + tailKey;
+            QuotaLimitItem item = quotaLimitItemMap.computeIfAbsent(localKey, key -> new QuotaLimitItem(k,  tailKey, 0, 0, v.getQuota(), v.getTimeSpan(), -1, now));
             item.setExpireTime(item.getStartTime() + v.getTimeSpan() * SECOND_TO_MILLIS);
             item.setTotalQuota(v.getQuota());
 
             // 2、更新redis中的相关数据
-            RMap<Object, Object> quotaInRedis = redisClient.getMap(k, new StringCodec("utf-8"));
+            RMap<Object, Object> quotaInRedis = redisClient.getMap(item.buildKey(), new StringCodec("utf-8"));
             quotaInRedis.put("totalQuota", item.getTotalQuota());
             quotaInRedis.put("expireTime", item.getExpireTime());
             quotaInRedis.put("startTime", item.getStartTime());
-            quotaInRedis.expireAt(item.getExpireTime());
+            long survivalTimeInRedis = quotaInRedis.remainTimeToLive() + now;
+            if (Math.abs(item.getExpireTime() - survivalTimeInRedis) > GAP) {
+                quotaInRedis.expireAt(item.getExpireTime());
+            }
         });
     }
 }

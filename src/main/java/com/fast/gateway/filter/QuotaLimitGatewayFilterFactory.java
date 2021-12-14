@@ -27,7 +27,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 @Component
 public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<QuotaLimitGatewayFilterFactory.Config> {
 
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(10);
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
 
     @Autowired
     private QuotaLimitHelper quotaLimitHelper;
@@ -58,8 +58,11 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
         return (exchange, chain) -> {
             String[] keys = Strings.nullToEmpty(config.getKeys()).split(SPLIT_SEMICOLON);
             for (String key : keys) {
-                String realKey = buildKey(key, exchange);
-                if (!quotaLimitHelper.tryAcquire(realKey, 1)) {
+                String prefixKey = buildPrefixKey(key, exchange);
+                if (prefixKey.contains(UNKNOW)) {
+                    continue;
+                }
+                if (!quotaLimitHelper.tryAcquire(prefixKey, 1)) {
                     return RewriteResponseUtils.rewriteResponse(exchange, "当前api超过额度限制");
                 }
             }
@@ -74,7 +77,7 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
      * @param exchange
      * @return
      */
-    private String buildKey(String key, ServerWebExchange exchange) {
+    private String buildPrefixKey(String key, ServerWebExchange exchange) {
         Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
         String id = route.getId();
         String[] keyArray = Strings.nullToEmpty(key).split(SPLIT_COMMA);

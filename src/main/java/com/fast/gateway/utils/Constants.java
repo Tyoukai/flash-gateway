@@ -1,6 +1,7 @@
 package com.fast.gateway.utils;
 
 public class Constants {
+    public static String UNKNOW = "unkonw";
     public static String PARAM = "param";
     public static String INPUT_JSON_STRING = "input.json.string";
     public static String OUTPUT_JSON_STRING = "output.json.string";
