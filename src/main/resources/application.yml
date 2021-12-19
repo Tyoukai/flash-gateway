@@ -8,9 +8,11 @@ spring:
     username: root
     password: hust123456
   application:
-    name: gateway-test
+    name: The-Flash # 闪电侠
   cloud:
     zookeeper:
+      discovery:
+        root: /flash_gateway  # 注册到zk上的根目录默认路径为 /services
       connect-string: 42.192.49.234:2181
     gateway:
       routes:

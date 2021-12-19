@@ -2,7 +2,9 @@ package com.fast.gateway.controller;
 
 import com.dianping.cat.Cat;
 import com.fast.gateway.entity.ApiQuotaLimitDO;
+import com.fast.gateway.entity.ApiRateLimitDO;
 import com.fast.gateway.service.ApiQuotaLimitService;
+import com.fast.gateway.service.ApiRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,9 +19,17 @@ public class TestController {
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
 
+    @Autowired
+    private ApiRateLimitService apiRateLimitService;
+
     @RequestMapping("/quota/config")
     public Mono<Map<String, ApiQuotaLimitDO>> listQuotaConfig() {
         return Mono.just(apiQuotaLimitService.listAllQuotaLimitConfig());
+    }
+
+    @RequestMapping("/rate/config")
+    public Mono<Map<String, ApiRateLimitDO>> listRateLimitConfig() {
+        return Mono.just(apiRateLimitService.listApiRateLimitConfig());
     }
 
     @RequestMapping("/quota/test")

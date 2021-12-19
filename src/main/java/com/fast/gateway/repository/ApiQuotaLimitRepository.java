@@ -8,6 +8,11 @@ import java.util.List;
 @Mapper
 public interface ApiQuotaLimitRepository {
 
+    /**
+     * 查询所有限额相关配置
+     *
+     * @return
+     */
     List<ApiQuotaLimitDO> listAllApiQuotaLimitConfig();
 
 }
