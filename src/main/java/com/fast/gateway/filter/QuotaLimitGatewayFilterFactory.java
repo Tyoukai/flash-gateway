@@ -7,19 +7,14 @@ import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.cloud.gateway.route.Route;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.fast.gateway.utils.Constants.*;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 /**
  * 网关限额过滤器
@@ -58,7 +53,7 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
         return (exchange, chain) -> {
             String[] keys = Strings.nullToEmpty(config.getKeys()).split(SPLIT_SEMICOLON);
             for (String key : keys) {
-                String prefixKey = buildPrefixKey(key, exchange);
+                String prefixKey = GatewayContextUtils.buildKey(exchange, key);
                 if (prefixKey.contains(UNKNOW)) {
                     continue;
                 }
@@ -68,23 +63,6 @@ public class QuotaLimitGatewayFilterFactory extends AbstractGatewayFilterFactory
             }
             return chain.filter(exchange);
         };
-    }
-
-    /**
-     * 规则：id_key1:value1;key2:value2
-     *
-     * @param key
-     * @param exchange
-     * @return
-     */
-    private String buildPrefixKey(String key, ServerWebExchange exchange) {
-        Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
-        String id = route.getId();
-        String[] keyArray = Strings.nullToEmpty(key).split(SPLIT_COMMA);
-        return id + SPLIT_UNDERLINE + Arrays.stream(keyArray)
-                .map(k -> k.trim() + SPLIT_COLON + GatewayContextUtils.getParam(exchange, k))
-                .sorted(String::compareTo)
-                .collect(Collectors.joining(SPLIT_SEMICOLON));
     }
 
     public static class Config {

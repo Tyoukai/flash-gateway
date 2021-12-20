@@ -19,11 +19,15 @@ public class ApiRateLimitService {
     @Autowired
     private ApiRateLimitRepository apiRateLimitRepository;
 
-    public Map<String, ApiRateLimitDO> listApiRateLimitConfig() {
+    public Map<String, ApiRateLimitDO> mapApiRateLimitConfig() {
         List<ApiRateLimitDO> apiRateLimitDOList = apiRateLimitRepository.listAllApiRateLimitConfig();
         return ListUtils.emptyIfNull(apiRateLimitDOList).stream()
                 .filter(apiRateLimitDO -> apiRateLimitDO.getQps() > 0)
                 .collect(Collectors.toMap(this::buildApiLimitConfigKey, Function.identity()));
+    }
+
+    public List<ApiRateLimitDO> listAllApiRateLimitConfig() {
+        return apiRateLimitRepository.listAllApiRateLimitConfig();
     }
 
     private String buildApiLimitConfigKey(ApiRateLimitDO apiRateLimitDO) {

@@ -28,8 +28,8 @@ public class TestController {
     }
 
     @RequestMapping("/rate/config")
-    public Mono<Map<String, ApiRateLimitDO>> listRateLimitConfig() {
-        return Mono.just(apiRateLimitService.listApiRateLimitConfig());
+    public Mono<Map<String, ApiRateLimitDO>> mapRateLimitConfig() {
+        return Mono.just(apiRateLimitService.mapApiRateLimitConfig());
     }
 
     @RequestMapping("/quota/test")

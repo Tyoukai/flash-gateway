@@ -1,12 +1,16 @@
 package com.fast.gateway.filter;
 
-import org.apache.commons.lang3.StringUtils;
+import com.fast.gateway.others.RateLimitHelper;
+import com.fast.gateway.utils.GatewayContextUtils;
+import com.fast.gateway.utils.RewriteResponseUtils;
+import com.google.common.base.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+
+import static com.fast.gateway.utils.Constants.SPLIT_SEMICOLON;
+import static com.fast.gateway.utils.Constants.UNKNOW;
 
 /**
  * 限流Filter
@@ -14,66 +18,41 @@ import reactor.core.publisher.Mono;
 @Component
 public class RateLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<RateLimitGatewayFilterFactory.Config> {
 
+    @Autowired
+    private RateLimitHelper rateLimitHelper;
+
     public RateLimitGatewayFilterFactory() {
         super(Config.class);
     }
 
     @Override
     public GatewayFilter apply(Config config) {
-        System.out.println("config:" + config);
-        return new RateLimitGatewayFilter(config);
-    }
+        return (exchange, chain) -> {
+            String[] keys = Strings.nullToEmpty(config.getKeys()).split(SPLIT_SEMICOLON);
+            for (String key : keys) {
+                String realKey = GatewayContextUtils.buildKey(exchange, key);
+                if (realKey.contains(UNKNOW)) {
+                    continue;
+                }
 
-    private class RateLimitGatewayFilter implements GatewayFilter {
-        private Config config;
-
-        public RateLimitGatewayFilter(Config config) {
-            this.config = config;
-        }
-
-        /**
-         * 根据appkey 获取当前的访问次数，再根据设置的值判断是否允许访问
-         *
-         * @param exchange
-         * @param chain
-         * @return
-         */
-        @Override
-        public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-            System.out.println("RateLimitGatewayFilterFactory execute");
-            String appKeyInRequest = exchange.getAttribute("appKey");
-            String appKey = config.getAppKey();
-
-            if (StringUtils.equals(appKeyInRequest, appKey) && getCount(appKey) > config.getQps()) {
-                return Mono.error(new Exception("超过限流值"));
+                if (!rateLimitHelper.tryAcquire(key)) {
+                    return RewriteResponseUtils.rewriteResponse(exchange, "当前api超过流量限制");
+                }
             }
 
             return chain.filter(exchange);
-        }
-
-        private long getCount(String appKey) {
-            return 10;
-        }
+        };
     }
 
     public static class Config {
-        private String appKey;
-        private int qps;
+        private String keys;
 
-        public String getAppKey() {
-            return appKey;
+        public String getKeys() {
+            return keys;
         }
 
-        public void setAppKey(String appkey) {
-            this.appKey = appkey;
-        }
-
-        public int getQps() {
-            return qps;
-        }
-
-        public void setQps(int qps) {
-            this.qps = qps;
+        public void setKeys(String keys) {
+            this.keys = keys;
         }
 
         @Override
