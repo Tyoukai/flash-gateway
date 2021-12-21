@@ -3,11 +3,15 @@ package com.fast.gateway.others;
 import com.fast.gateway.entity.ApiRateLimitDO;
 import com.fast.gateway.service.ApiRateLimitService;
 import com.google.common.util.concurrent.RateLimiter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +25,21 @@ public class RateLimitHelper {
     private ApiRateLimitService apiRateLimitService;
 
     private CuratorFramework curatorClient;
+
+    private static String zookeeperAddress = "42.192.49.234:2181";
+
+
+    @PostConstruct
+    public void init() {
+        curatorClient = CuratorFrameworkFactory.builder()
+                .connectString(zookeeperAddress)
+                .connectionTimeoutMs(2000)
+                .sessionTimeoutMs(10000)
+                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .build();
+
+        curatorClient.start();
+    }
 
     /**
      * 存放api不同维度的限流配置
@@ -55,8 +74,17 @@ public class RateLimitHelper {
      * @return
      */
     private double countClusterNode() {
-        // todo:
-        return 1;
+        try {
+            List<String> children = curatorClient.getChildren().forPath("/flash_gateway/The-Flash");
+            if (CollectionUtils.isEmpty(children)) {
+                return 1;
+            }
+
+            return children.size();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 1;
+        }
     }
 
     private String buildKey(String apiId, String rateKey) {

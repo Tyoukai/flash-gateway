@@ -9,6 +9,11 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import static com.fast.gateway.utils.Constants.SPLIT_SEMICOLON;
 import static com.fast.gateway.utils.Constants.UNKNOW;
 
@@ -21,8 +26,17 @@ public class RateLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<
     @Autowired
     private RateLimitHelper rateLimitHelper;
 
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+
+
     public RateLimitGatewayFilterFactory() {
         super(Config.class);
+    }
+
+    @PostConstruct
+    public void init() {
+        // 1、初始化同步数据库同步任务
+        executorService.scheduleAtFixedRate(() -> rateLimitHelper.syncQpsInDataBase(), 0, 1, TimeUnit.SECONDS);
     }
 
     @Override
