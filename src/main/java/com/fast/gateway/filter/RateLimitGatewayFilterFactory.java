@@ -49,7 +49,7 @@ public class RateLimitGatewayFilterFactory extends AbstractGatewayFilterFactory<
                     continue;
                 }
 
-                if (!rateLimitHelper.tryAcquire(key)) {
+                if (!rateLimitHelper.tryAcquire(realKey)) {
                     return RewriteResponseUtils.rewriteResponse(exchange, "当前api超过流量限制");
                 }
             }

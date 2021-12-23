@@ -20,15 +20,14 @@ spring:
         uri: http://www.ityouknow.com
         predicates:
           - Path=/spring-cloud
-      - id: rate_filter
-        uri: https://www.baidu.com/
+      - id: rate.limit.test.api
+        uri: http://localhost:8100/test/rate/test/
         predicates:
-          - Path=/test/rate-limit
+          - Path=/gateway/rateTest
         filters:
           - name: RateLimit
             args:
-              appKey: sss
-              qps: 10
+              keys: apiId
       - id: log_record
         uri: http://localhost:8100/test/logRecord/
         predicates:

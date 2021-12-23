@@ -32,6 +32,11 @@ public class TestController {
         return Mono.just(apiRateLimitService.mapApiRateLimitConfig());
     }
 
+    @RequestMapping("/rate/test")
+    public Mono<String> rateLimitTestApi() {
+        return Mono.just("rate.test");
+    }
+
     @RequestMapping("/quota/test")
     public Mono<String> quotaLimitTestApi() {
         return Mono.just("quota.test");

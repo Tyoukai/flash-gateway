@@ -28,6 +28,8 @@ public class RateLimitHelper {
 
     private static String zookeeperAddress = "42.192.49.234:2181";
 
+    private static final String zkPath = "/flash_gateway/The-Flash";
+
 
     @PostConstruct
     public void init() {
@@ -60,8 +62,10 @@ public class RateLimitHelper {
         try {
             List<ApiRateLimitDO> apiRateLimitDOS = apiRateLimitService.listAllApiRateLimitConfig();
             ListUtils.emptyIfNull(apiRateLimitDOS).forEach(apiRateLimitDO -> {
-                rateLimiterMap.computeIfAbsent(buildKey(apiRateLimitDO.getApi(), apiRateLimitDO.getRateKey()),
+                RateLimiter rateLimiter = rateLimiterMap.computeIfAbsent(buildKey(apiRateLimitDO.getApi(), apiRateLimitDO.getRateKey()),
                         key -> RateLimiter.create(apiRateLimitDO.getQps() / countClusterNode()));
+
+                rateLimiter.setRate(apiRateLimitDO.getQps() / countClusterNode());
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,7 +79,7 @@ public class RateLimitHelper {
      */
     private double countClusterNode() {
         try {
-            List<String> children = curatorClient.getChildren().forPath("/flash_gateway/The-Flash");
+            List<String> children = curatorClient.getChildren().forPath(zkPath);
             if (CollectionUtils.isEmpty(children)) {
                 return 1;
             }
