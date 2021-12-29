@@ -1,5 +1,5 @@
 server:
-  port: 8101
+  port: 8100
 spring:
   #数据库连接配置
   datasource:
@@ -15,6 +15,18 @@ spring:
         root: /flash_gateway  # 注册到zk上的根目录默认路径为 /services
       connect-string: 42.192.49.234:2181
     gateway:
+      discovery:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedHeaders: "*"
+            allowedOrigins: "*"
+            allowedMethods:
+            - GET
+              POST
+              DELETE
+              PUT
+              OPTION
       routes:
       - id: neo_route
         uri: http://www.ityouknow.com
