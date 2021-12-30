@@ -15,18 +15,6 @@ spring:
         root: /flash_gateway  # 注册到zk上的根目录默认路径为 /services
       connect-string: 42.192.49.234:2181
     gateway:
-      discovery:
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedHeaders: "*"
-            allowedOrigins: "*"
-            allowedMethods:
-            - GET
-              POST
-              DELETE
-              PUT
-              OPTION
       routes:
       - id: neo_route
         uri: http://www.ityouknow.com
@@ -45,6 +33,9 @@ spring:
         predicates:
           - Path=/logRecord
         filters:
+          - name: AddCorsHeader
+            args:
+              origin: 123
           - name: LogRecord
             args:
               appKey: logRecord
