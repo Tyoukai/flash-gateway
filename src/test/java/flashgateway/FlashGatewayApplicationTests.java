@@ -1,12 +1,12 @@
 //package flashgateway;
 //
-//import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.LogTest;
 //import org.springframework.boot.test.context.SpringBootTest;
 //
 //@SpringBootTest
 //class FlashGatewayApplicationTests {
 //
-//	@Test
+//	@LogTest
 //	void contextLoads() {
 //	}
 //
