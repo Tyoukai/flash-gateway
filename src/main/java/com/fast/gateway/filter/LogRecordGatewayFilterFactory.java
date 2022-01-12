@@ -2,6 +2,7 @@ package com.fast.gateway.filter;
 
 import com.google.common.collect.Lists;
 import io.netty.util.CharsetUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -26,6 +27,7 @@ import java.util.List;
  * 日志相关的过滤器
  */
 @Component
+@Slf4j
 public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<LogRecordGatewayFilterFactory.Config> {
 
     public LogRecordGatewayFilterFactory() {
@@ -45,11 +47,11 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            log.error("InterruptedException", e);
                         }
                         Long startTime = exchange.getAttribute(REQUESR_BEGIN_TIME);
                         String cost = String.valueOf(System.currentTimeMillis() - startTime);
-                        System.out.println("cost:" + cost);
+                        log.info("cost:{}", cost);
                         String responseCost = "cost: " + cost;
                         byte[] byteResponseCost = responseCost.getBytes(CharsetUtil.UTF_8);
                         ServerHttpResponse response = exchange.getResponse();
