@@ -29,10 +29,10 @@ public class AddCorsHeaderGatewayFilterFactory extends AbstractGatewayFilterFact
             ServerHttpRequest request = exchange.getRequest();
             ServerHttpResponse response = exchange.getResponse();
             HttpHeaders headers = response.getHeaders();
-            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST, GET, PUT, OPTIONS, DELETE, PATCH");
-            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "*");
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, config.getAllowOrigin());
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, config.getAllowMethod());
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, config.getAllowCredentials());
+            headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, config.getAllowHeaders());
             headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, ALL);
             headers.add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, MAX_AGE);
             if (request.getMethod() == HttpMethod.OPTIONS) {
@@ -43,15 +43,48 @@ public class AddCorsHeaderGatewayFilterFactory extends AbstractGatewayFilterFact
         };
     }
 
+    /**
+     * see https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS
+     */
     public static class Config {
-        private String origin;
+        private String allowOrigin;  // *
 
-        public String getOrigin() {
-            return origin;
+        private String allowMethod;  // "POST, GET, PUT, OPTIONS, DELETE, PATCH"
+
+        private String allowCredentials; // true
+
+        private String allowHeaders; // *
+
+        public String getAllowOrigin() {
+            return allowOrigin;
         }
 
-        public void setOrigin(String origin) {
-            this.origin = origin;
+        public void setAllowOrigin(String allowOrigin) {
+            this.allowOrigin = allowOrigin;
+        }
+
+        public String getAllowMethod() {
+            return allowMethod;
+        }
+
+        public void setAllowMethod(String allowMethod) {
+            this.allowMethod = allowMethod;
+        }
+
+        public String getAllowCredentials() {
+            return allowCredentials;
+        }
+
+        public void setAllowCredentials(String allowCredentials) {
+            this.allowCredentials = allowCredentials;
+        }
+
+        public String getAllowHeaders() {
+            return allowHeaders;
+        }
+
+        public void setAllowHeaders(String allowHeaders) {
+            this.allowHeaders = allowHeaders;
         }
     }
 

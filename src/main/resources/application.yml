@@ -34,8 +34,12 @@ spring:
           - Path=/logRecord
         filters:
           - name: AddCorsHeader
-            args:
-              origin: 123
+            args: {
+              "allowOrigin": "*",
+              "allowMethod": "GET",
+              "allowCredentials": "true",
+              "allowHeaders": "*"
+            }
           - name: LogRecord
             args:
               appKey: logRecord
