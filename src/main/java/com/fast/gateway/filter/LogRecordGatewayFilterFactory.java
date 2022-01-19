@@ -1,5 +1,6 @@
 package com.fast.gateway.filter;
 
+import com.fast.gateway.utils.ObjectMapperUtils;
 import com.google.common.collect.Lists;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +39,10 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
     private static String RESPONSE_COOKIE_NAME = "rt-record";
     @Override
     public GatewayFilter apply(Config config) {
-        return ((exchange, chain) -> {
+        return (exchange, chain) -> {
             exchange.getAttributes().put(REQUESR_BEGIN_TIME, System.currentTimeMillis());
             MultiValueMap<String, String> map = exchange.getRequest().getQueryParams();
+            log.info("API_INPUT:{}", ObjectMapperUtils.toJson(map));
 
             return chain.filter(exchange).then(
                     Mono.defer(() -> {
@@ -61,7 +63,7 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
                         return response.writeWith(Flux.just(buffer));
                     })
             );
-        });
+        };
     }
 
     public static class Config {
