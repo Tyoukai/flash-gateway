@@ -35,12 +35,12 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
         super(Config.class);
     }
 
-    private static String REQUESR_BEGIN_TIME = "requestBeginTime";
+    private static String REQUEST_BEGIN_TIME = "requestBeginTime";
     private static String RESPONSE_COOKIE_NAME = "rt-record";
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            exchange.getAttributes().put(REQUESR_BEGIN_TIME, System.currentTimeMillis());
+            exchange.getAttributes().put(REQUEST_BEGIN_TIME, System.currentTimeMillis());
             MultiValueMap<String, String> map = exchange.getRequest().getQueryParams();
             log.info("API_INPUT:{}", ObjectMapperUtils.toJson(map));
 
@@ -51,7 +51,7 @@ public class LogRecordGatewayFilterFactory extends AbstractGatewayFilterFactory<
                         } catch (InterruptedException e) {
                             log.error("InterruptedException", e);
                         }
-                        Long startTime = exchange.getAttribute(REQUESR_BEGIN_TIME);
+                        Long startTime = exchange.getAttribute(REQUEST_BEGIN_TIME);
                         String cost = String.valueOf(System.currentTimeMillis() - startTime);
                         log.info("cost:{}", cost);
                         String responseCost = "cost: " + cost;
