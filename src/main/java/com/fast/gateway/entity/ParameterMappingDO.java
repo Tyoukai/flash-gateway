@@ -2,13 +2,16 @@ package com.fast.gateway.entity;
 
 import lombok.Data;
 
+/**
+ * 参数映射DO
+ */
 @Data
-public class ApiQuotaLimitDO {
+public class ParameterMappingDO {
     private long id;
     private String api;
-    private String quotaKey;
-    private int quota;
-    private int timeSpan;
+    private int type;
+    private String from;
+    private String to;
     private long createTime;
     private long updateTime;
 }
