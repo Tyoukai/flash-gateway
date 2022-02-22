@@ -3,13 +3,16 @@ package com.fast.gateway.controller;
 import com.dianping.cat.Cat;
 import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.entity.ApiRateLimitDO;
+import com.fast.gateway.entity.CorsHeaderDO;
 import com.fast.gateway.service.ApiQuotaLimitService;
 import com.fast.gateway.service.ApiRateLimitService;
+import com.fast.gateway.service.CorsHeaderConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +24,9 @@ public class TestController {
 
     @Autowired
     private ApiRateLimitService apiRateLimitService;
+
+    @Autowired
+    private CorsHeaderConfigService corsHeaderConfigService;
 
     @RequestMapping("/quota/config")
     public Mono<Map<String, ApiQuotaLimitDO>> listQuotaConfig() {
@@ -51,5 +57,10 @@ public class TestController {
     @RequestMapping("/logRecord")
     public Mono<String> logRecord() {
         return Mono.just("log-record");
+    }
+
+    @RequestMapping("/listCorsHeader")
+    public Mono<List<CorsHeaderDO>> listCorsHeaderConfig() {
+        return Mono.just(corsHeaderConfigService.listCorsHeaderConfig());
     }
 }
