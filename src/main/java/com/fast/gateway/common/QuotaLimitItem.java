@@ -1,4 +1,4 @@
-package com.fast.gateway.others;
+package com.fast.gateway.common;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

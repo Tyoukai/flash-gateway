@@ -1,4 +1,4 @@
-package com.fast.gateway.others;
+package com.fast.gateway.common;
 
 /**
  * 全局过滤器的执行顺序

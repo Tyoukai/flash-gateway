@@ -1,6 +1,6 @@
 package com.fast.gateway.filter.global;
 
-import com.fast.gateway.others.GlobalFilterOrderEnum;
+import com.fast.gateway.common.GlobalFilterOrderEnum;
 import com.fast.gateway.utils.ObjectMapperUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;

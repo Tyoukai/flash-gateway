@@ -2,9 +2,10 @@ package flashgateway;
 
 import com.fast.gateway.Application;
 import com.fast.gateway.entity.ApiQuotaLimitDO;
-import com.fast.gateway.entity.CorsHeaderDO;
+
+import com.fast.gateway.entity.ApiRouteConfigDTO;
 import com.fast.gateway.service.ApiQuotaLimitService;
-import com.fast.gateway.service.CorsHeaderConfigService;
+import com.fast.gateway.service.ApiRouteService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +23,15 @@ public class FlashGatewayApplicationTests {
     private ApiQuotaLimitService apiQuotaLimitService;
 
     @Autowired
-    private CorsHeaderConfigService corsHeaderConfigService;
+    private ApiRouteService apiRouteService;
 
     @Test
     public void listAllQuotaLimitConfigTest() {
         Map<String, ApiQuotaLimitDO> map = apiQuotaLimitService.listAllQuotaLimitConfig();
     }
 
-    @Test
-    public void listCorsHeaderConfigTest() {
-        List<CorsHeaderDO> list = corsHeaderConfigService.listCorsHeaderConfig();
+    public void listApiRouteConfigTest() {
+        List<ApiRouteConfigDTO> list =  apiRouteService.listApiRouteConfig();
     }
 
 }

@@ -1,6 +1,6 @@
 package com.fast.gateway.filter.global;
 
-import com.fast.gateway.others.GlobalFilterOrderEnum;
+import com.fast.gateway.common.GlobalFilterOrderEnum;
 import com.fast.gateway.utils.GrpcUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;

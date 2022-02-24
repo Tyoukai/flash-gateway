@@ -1,6 +1,6 @@
 package com.fast.gateway.filter;
 
-import com.fast.gateway.others.RateLimitHelper;
+import com.fast.gateway.common.RateLimitHelper;
 import com.fast.gateway.utils.GatewayContextUtils;
 import com.fast.gateway.utils.RewriteResponseUtils;
 import com.google.common.base.Strings;

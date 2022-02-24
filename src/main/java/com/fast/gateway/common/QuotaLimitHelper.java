@@ -1,4 +1,4 @@
-package com.fast.gateway.others;
+package com.fast.gateway.common;
 
 import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.service.ApiQuotaLimitService;

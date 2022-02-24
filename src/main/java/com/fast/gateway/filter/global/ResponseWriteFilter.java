@@ -12,7 +12,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.fast.gateway.others.GlobalFilterOrderEnum.RESPONSE_WRITE;
+import static com.fast.gateway.common.GlobalFilterOrderEnum.RESPONSE_WRITE;
 import static com.fast.gateway.utils.Constants.OUTPUT_JSON_STRING;
 
 
