@@ -30,6 +30,7 @@ public class FlashGatewayApplicationTests {
         Map<String, ApiQuotaLimitDO> map = apiQuotaLimitService.listAllQuotaLimitConfig();
     }
 
+    @Test
     public void listApiRouteConfigTest() {
         List<ApiRouteConfigDTO> list =  apiRouteService.listApiRouteConfig();
     }

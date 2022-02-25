@@ -2,6 +2,8 @@ package com.fast.gateway.common;
 
 import com.fast.gateway.entity.ApiRouteConfigDO;
 import com.fast.gateway.entity.ApiRouteConfigDTO;
+import com.fast.gateway.entity.Filter;
+import com.fast.gateway.entity.Predicate;
 import com.fast.gateway.utils.ObjectMapperUtils;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -15,8 +17,8 @@ public class DataConvert {
         apiRouteConfigDTO.setId(apiRouteConfigDO.getId());
         apiRouteConfigDTO.setApiId(apiRouteConfigDO.getApiId());
         apiRouteConfigDTO.setUri(apiRouteConfigDO.getUri());
-        apiRouteConfigDTO.setPredicates(ObjectMapperUtils.fromJson(apiRouteConfigDO.getPredicates(), List.class));
-        apiRouteConfigDTO.setFilters(ObjectMapperUtils.fromJson(apiRouteConfigDO.getFilters(), List.class));
+        apiRouteConfigDTO.setPredicates(ObjectMapperUtils.fromJson(apiRouteConfigDO.getPredicates(), Predicate.class, List.class));
+        apiRouteConfigDTO.setFilters(ObjectMapperUtils.fromJson(apiRouteConfigDO.getFilters(), Filter.class, List.class));
         apiRouteConfigDTO.setOrder(apiRouteConfigDO.getOrder());
 
         return apiRouteConfigDTO;
