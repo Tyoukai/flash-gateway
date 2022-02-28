@@ -1,19 +1,15 @@
 package com.fast.gateway.repository;
 
 import com.fast.gateway.utils.ObjectMapperUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.cloud.gateway.route.RouteDefinition;
-import org.springframework.cloud.gateway.route.RouteDefinitionRepository;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -21,22 +17,21 @@ import java.util.List;
 
 import static com.fast.gateway.utils.Constants.SPILT_SLASH;
 
-
 /**
- * 动态路由配置，存储介质zookeeper
+ * 根据存储介质的不同实现不同的AbstractRouteDefinitionRepository，默认通过zookeeper存储
  */
 @Component
-public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, ApplicationEventPublisherAware {
+@Slf4j
+public class ZkRouteDefinitionRepository extends AbstractRouteDefinitionRepository {
 
-    private ApplicationEventPublisher applicationEventPublisher;
-    private String path = "/gateway";
+    private static String PATH = "/gateway";
     private CuratorFramework curatorClient;
-    private String zookeeperAddress = "42.192.49.234:2181";
+    private static String ZOOKEEPER_ADDRESS = "42.192.49.234:2181";
 
     @PostConstruct
     public void init() throws Exception {
         curatorClient = CuratorFrameworkFactory.builder()
-                .connectString(zookeeperAddress)
+                .connectString(ZOOKEEPER_ADDRESS)
                 .connectionTimeoutMs(2000)
                 .sessionTimeoutMs(10000)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
@@ -44,7 +39,7 @@ public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, A
 
         curatorClient.start();
 
-        PathChildrenCache cache = new PathChildrenCache(curatorClient, path, true);
+        PathChildrenCache cache = new PathChildrenCache(curatorClient, PATH, true);
         cache.getListenable().addListener((curatorFramework, event) -> {
             ChildData data = event.getData();
             if (data.getData() == null) {
@@ -53,30 +48,29 @@ public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, A
             String routeStr = new String(data.getData());
             switch (event.getType()) {
                 case CHILD_ADDED:
-                    System.out.println("新路由创建," + routeStr);
+                    log.info("新路由创建:{}" + routeStr);
                     break;
                 case CHILD_UPDATED:
-                    System.out.println("路由被修改, " + routeStr);
+                    log.info("路由被修改:{}" + routeStr);
                     break;
                 case CHILD_REMOVED:
-                    System.out.println("路由被删除," + routeStr);
+                    log.info("路由被删除:{}" + routeStr);
             }
-            applicationEventPublisher.publishEvent(new RefreshRoutesEvent(this));
+            refresh();
         });
 
         cache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
-
     }
 
     @Override
-    public Flux<RouteDefinition> getRouteDefinitions() {
+    Flux<RouteDefinition> getRouteDefinitionsFromMedium() {
         List<RouteDefinition> routeDefinitions = new ArrayList<>();
         try {
-            List<String> childIds = curatorClient.getChildren().forPath(path);
+            List<String> childIds = curatorClient.getChildren().forPath(PATH);
             childIds.forEach(childId -> {
                 String routeStr;
                 try {
-                    routeStr = new String(curatorClient.getData().forPath(path + SPILT_SLASH + childId));
+                    routeStr = new String(curatorClient.getData().forPath(PATH + SPILT_SLASH + childId));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -88,20 +82,5 @@ public class ZkRouteDefinitionRepository implements RouteDefinitionRepository, A
             e.printStackTrace();
         }
         return Flux.fromIterable(routeDefinitions);
-    }
-
-    @Override
-    public Mono<Void> save(Mono<RouteDefinition> route) {
-        return route.flatMap(routeDefinition -> Mono.empty());
-    }
-
-    @Override
-    public Mono<Void> delete(Mono<String> routeId) {
-        return Mono.empty();
-    }
-
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 }

@@ -21,7 +21,7 @@ import static com.fast.gateway.utils.Constants.*;
  * 参数映射的Filter
  * 在http->grpc或grpc->http时进行参数映射
  */
-@Component
+//@Component
 public class ParameterMappingFilter implements GlobalFilter, Ordered {
     private Map<String, String> inputMap = new HashMap<>();
     private Map<String, String> outputMap = new HashMap<>();

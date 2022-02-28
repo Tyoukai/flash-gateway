@@ -32,7 +32,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
  * 4、调用相关的grpc服务
  * 5、将调用的结果写入exchange中的attribute的GRPC_EXE_JSON_STRING中
  */
-@Component
+//@Component
 public class GrpcRouteFilter implements GlobalFilter, Ordered {
 
     private CuratorFramework curatorClient;

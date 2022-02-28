@@ -1,4 +1,4 @@
-package com.fast.gateway.filter.global;
+package com.fast.gateway.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
