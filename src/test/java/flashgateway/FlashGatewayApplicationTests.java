@@ -6,6 +6,7 @@ import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.entity.ApiRouteConfigDTO;
 import com.fast.gateway.service.ApiQuotaLimitService;
 import com.fast.gateway.service.ApiRouteService;
+import com.fast.gateway.utils.ObjectMapperUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class FlashGatewayApplicationTests {
     @Test
     public void listApiRouteConfigTest() {
         List<ApiRouteConfigDTO> list =  apiRouteService.listApiRouteConfig();
+        System.out.println(ObjectMapperUtils.toJson(list));
     }
 
 }

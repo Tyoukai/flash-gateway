@@ -4,10 +4,12 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * 对应真实的字段
+ */
 @Data
 public class ApiRouteConfigDTO {
-    private long id;
-    private String apiId;
+    private String id;
     private String uri;
     private List<Predicate> predicates;
     private List<Filter> filters;

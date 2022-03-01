@@ -14,8 +14,7 @@ public class DataConvert {
 
     public static ApiRouteConfigDTO toDto(ApiRouteConfigDO apiRouteConfigDO) {
         ApiRouteConfigDTO apiRouteConfigDTO = new ApiRouteConfigDTO();
-        apiRouteConfigDTO.setId(apiRouteConfigDO.getId());
-        apiRouteConfigDTO.setApiId(apiRouteConfigDO.getApiId());
+        apiRouteConfigDTO.setId(apiRouteConfigDO.getApiId());
         apiRouteConfigDTO.setUri(apiRouteConfigDO.getUri());
         apiRouteConfigDTO.setPredicates(ObjectMapperUtils.fromJson(apiRouteConfigDO.getPredicates(), Predicate.class, List.class));
         apiRouteConfigDTO.setFilters(ObjectMapperUtils.fromJson(apiRouteConfigDO.getFilters(), Filter.class, List.class));
