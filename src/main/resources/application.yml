@@ -16,45 +16,45 @@ spring:
       connect-string: 42.192.49.234:2181
     gateway:
       routes:
-      - id: neo_route
-        uri: http://www.ityouknow.com
-        predicates:
-          - Path=/spring-cloud
-      - id: rate.limit.test.api
-        uri: http://localhost:8100/test/rate/test/
-        predicates:
-          - Path=/gateway/rateTest
-        filters:
-          - name: RateLimit
-            args:
-              keys: apiId
-      - id: log_record
-        uri: http://localhost:8100/test/logRecord/
-        predicates:
-          - Path=/logRecord
-        filters:
-          - name: AddCorsHeader
-            args: {
-              "allowOrigin": "*",
-              "allowMethod": "GET",
-              "allowCredentials": "true",
-              "allowHeaders": "*"
-            }
-          - name: LogRecord
-            args:
-              appKey: logRecord
-      - id: grpc_transfer_account
-        uri: grpc://grpc.server.grpc_TransferAccountService/transferAccount    #grpc在zk上注册的路由路径/具体的服务名称
-        predicates:
-          - Path=/transferAccount
-      - id: quota.limit.test.api
-        uri: http://localhost:8100/test/quota/test/
-        predicates:
-          - Path=/gateway/quotaTest
-        filters:
-          - name: QuotaLimit
-            args:
-              keys: userId;appkey,token
+#      - id: neo_route
+#        uri: http://www.ityouknow.com
+#        predicates:
+#          - Path=/spring-cloud
+#      - id: rate.limit.test.api
+#        uri: http://localhost:8100/test/rate/test/
+#        predicates:
+#          - Path=/gateway/rateTest
+#        filters:
+#          - name: RateLimit
+#            args:
+#              keys: apiId
+#      - id: log_record
+#        uri: http://localhost:8100/test/logRecord/
+#        predicates:
+#          - Path=/logRecord
+#        filters:
+#          - name: AddCorsHeader
+#            args: {
+#              "allowOrigin": "*",
+#              "allowMethod": "GET",
+#              "allowCredentials": "true",
+#              "allowHeaders": "*"
+#            }
+#          - name: LogRecord
+#            args:
+#              appKey: logRecord
+#      - id: grpc_transfer_account
+#        uri: grpc://grpc.server.grpc_TransferAccountService/transferAccount    #grpc在zk上注册的路由路径/具体的服务名称
+#        predicates:
+#          - Path=/transferAccount
+#      - id: quota.limit.test.api
+#        uri: http://localhost:8100/test/quota/test/
+#        predicates:
+#          - Path=/gateway/quotaTest
+#        filters:
+#          - name: QuotaLimit
+#            args:
+#              keys: userId;appkey,token
 
 # 动态路由配置
 management:

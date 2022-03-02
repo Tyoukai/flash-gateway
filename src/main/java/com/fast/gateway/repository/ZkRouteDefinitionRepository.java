@@ -48,13 +48,13 @@ public class ZkRouteDefinitionRepository extends AbstractRouteDefinitionReposito
             String routeStr = new String(data.getData());
             switch (event.getType()) {
                 case CHILD_ADDED:
-                    log.info("新路由创建:{}" + routeStr);
+                    log.info("新路由创建:" + routeStr);
                     break;
                 case CHILD_UPDATED:
-                    log.info("路由被修改:{}" + routeStr);
+                    log.info("路由被修改:" + routeStr);
                     break;
                 case CHILD_REMOVED:
-                    log.info("路由被删除:{}" + routeStr);
+                    log.info("路由被删除:" + routeStr);
             }
             refresh();
         });
