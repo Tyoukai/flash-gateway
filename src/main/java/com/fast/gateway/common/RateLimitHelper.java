@@ -9,6 +9,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.fast.gateway.utils.Constants.SPILT_SLASH;
 import static com.fast.gateway.utils.Constants.SPLIT_UNDERLINE;
 
 @Component
@@ -26,9 +28,14 @@ public class RateLimitHelper {
 
     private CuratorFramework curatorClient;
 
-    private static String zookeeperAddress = "42.192.49.234:2181";
+    @Value("${spring.cloud.zookeeper.connect-string}")
+    private String zookeeperAddress;
 
-    private static final String zkPath = "/flash_gateway/The-Flash";
+    @Value("${spring.cloud.zookeeper.discovery.root}")
+    private String discoveryRootPath;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
 
     @PostConstruct
@@ -79,7 +86,8 @@ public class RateLimitHelper {
      */
     private double countClusterNode() {
         try {
-            List<String> children = curatorClient.getChildren().forPath(zkPath);
+            String registerPath = discoveryRootPath + SPILT_SLASH + applicationName;
+            List<String> children = curatorClient.getChildren().forPath(registerPath);
             if (CollectionUtils.isEmpty(children)) {
                 return 1;
             }

@@ -1,6 +1,10 @@
 server:
   port: 8100
 spring:
+  redis:
+    host: 101.43.59.148
+    port: 6379
+    password: hust123456
   #数据库连接配置
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
@@ -14,8 +18,8 @@ spring:
       discovery:
         root: /flash_gateway  # 注册到zk上的根目录默认路径为 /services
       connect-string: 42.192.49.234:2181
-    gateway:
-      routes:
+#    gateway:
+#      routes:
 #      - id: neo_route
 #        uri: http://www.ityouknow.com
 #        predicates:
@@ -55,6 +59,9 @@ spring:
 #          - name: QuotaLimit
 #            args:
 #              keys: userId;appkey,token
+
+# 动态路由配置对应的zookeeper目录
+flashGatewayDynamicRoutePath: /gateway
 
 # 动态路由配置
 management:

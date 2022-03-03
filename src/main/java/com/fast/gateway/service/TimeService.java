@@ -11,6 +11,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -36,16 +37,19 @@ public class TimeService {
 
     private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
-    private static String PATH = "/gateway";
+    @Value("${flashGatewayDynamicRoutePath}")
+    private String dynamicRoutePath;
+
     private CuratorFramework curatorClient;
-    private static String ZOOKEEPER_ADDRESS = "42.192.49.234:2181";
+    @Value("${spring.cloud.zookeeper.connect-string}")
+    private String zookeeperAddress;
 
     @PostConstruct
     public void init() {
         executorService.scheduleAtFixedRate(this::syncRouteToZk, 0, 10, TimeUnit.SECONDS);
 
         curatorClient = CuratorFrameworkFactory.builder()
-                .connectString(ZOOKEEPER_ADDRESS)
+                .connectString(zookeeperAddress)
                 .connectionTimeoutMs(2000)
                 .sessionTimeoutMs(10000)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
@@ -61,7 +65,7 @@ public class TimeService {
             String routeStrInDb = ObjectMapperUtils.toJson(apiRouteConfigDTO);
             String routeStrInZk = "";
 
-            String path = PATH + SPILT_SLASH + apiRouteConfigDTO.getId();
+            String path = dynamicRoutePath + SPILT_SLASH + apiRouteConfigDTO.getId();
             try {
                 routeStrInZk = new String(curatorClient.getData().forPath(path));
             } catch (Exception e) {

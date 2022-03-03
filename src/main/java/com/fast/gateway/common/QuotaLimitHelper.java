@@ -8,6 +8,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static com.fast.gateway.utils.Constants.SPLIT_COLON;
 import static com.fast.gateway.utils.Constants.SPLIT_UNDERLINE;
 
 @Component
@@ -23,6 +25,15 @@ public class QuotaLimitHelper {
     private static RedissonClient redisClient;
 
     private static final int SECOND_TO_MILLIS = 1000;
+
+    @Value("${spring.redis.host}")
+    private String host;
+
+    @Value("${spring.redis.port}")
+    private String port;
+
+    @Value("${spring.redis.password}")
+    private String password;
 
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
@@ -41,8 +52,8 @@ public class QuotaLimitHelper {
     public void init() {
         Config config = new Config();
         config.useReplicatedServers()
-                .addNodeAddress("redis://101.43.59.148:6379")
-                .setPassword("hust123456");
+                .addNodeAddress("redis://" +host + SPLIT_COLON + port)
+                .setPassword(password);
         redisClient = Redisson.create(config);
     }
 

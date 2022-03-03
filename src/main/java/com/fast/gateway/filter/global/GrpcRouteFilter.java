@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.Route;
@@ -37,10 +38,13 @@ public class GrpcRouteFilter implements GlobalFilter, Ordered {
 
     private CuratorFramework curatorClient;
 
+    @Value("${spring.cloud.zookeeper.connect-string}")
+    private String zookeeperAddress;
+
     @PostConstruct
     public void init() {
         curatorClient = CuratorFrameworkFactory.builder()
-                .connectString("42.192.49.234:2181")
+                .connectString(zookeeperAddress)
                 .connectionTimeoutMs(3000)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                 .build();

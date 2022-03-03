@@ -7,6 +7,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -24,14 +25,18 @@ import static com.fast.gateway.utils.Constants.SPILT_SLASH;
 @Slf4j
 public class ZkRouteDefinitionRepository extends AbstractRouteDefinitionRepository {
 
-    private static String PATH = "/gateway";
+    @Value("${flashGatewayDynamicRoutePath}")
+    private String dynamicRoutePath = "/gateway";
+
     private CuratorFramework curatorClient;
-    private static String ZOOKEEPER_ADDRESS = "42.192.49.234:2181";
+
+    @Value("${spring.cloud.zookeeper.connect-string}")
+    private String zookeeperAddress;
 
     @PostConstruct
     public void init() throws Exception {
         curatorClient = CuratorFrameworkFactory.builder()
-                .connectString(ZOOKEEPER_ADDRESS)
+                .connectString(zookeeperAddress)
                 .connectionTimeoutMs(2000)
                 .sessionTimeoutMs(10000)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
@@ -39,7 +44,7 @@ public class ZkRouteDefinitionRepository extends AbstractRouteDefinitionReposito
 
         curatorClient.start();
 
-        PathChildrenCache cache = new PathChildrenCache(curatorClient, PATH, true);
+        PathChildrenCache cache = new PathChildrenCache(curatorClient, dynamicRoutePath, true);
         cache.getListenable().addListener((curatorFramework, event) -> {
             ChildData data = event.getData();
             if (data.getData() == null) {
@@ -66,11 +71,11 @@ public class ZkRouteDefinitionRepository extends AbstractRouteDefinitionReposito
     Flux<RouteDefinition> getRouteDefinitionsFromMedium() {
         List<RouteDefinition> routeDefinitions = new ArrayList<>();
         try {
-            List<String> childIds = curatorClient.getChildren().forPath(PATH);
+            List<String> childIds = curatorClient.getChildren().forPath(dynamicRoutePath);
             childIds.forEach(childId -> {
                 String routeStr;
                 try {
-                    routeStr = new String(curatorClient.getData().forPath(PATH + SPILT_SLASH + childId));
+                    routeStr = new String(curatorClient.getData().forPath(dynamicRoutePath + SPILT_SLASH + childId));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
