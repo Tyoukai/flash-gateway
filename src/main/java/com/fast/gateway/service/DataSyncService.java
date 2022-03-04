@@ -23,14 +23,19 @@ import java.util.concurrent.TimeUnit;
 import static com.fast.gateway.utils.Constants.SPILT_SLASH;
 
 /**
- *  时间相关的所有服务统一到该service进行处理
+ *  数据同步配置
  *  1、同步动态路由
- *  2、限额配置同步
- *  3、限流配置同步
+ *  原因：路由的原始信息存储在db中，路由相关的参数配置有版本的概念，为了解耦
+ *  数据同步等相关操作，ZkRouteDefinitionRepository拉取的仅仅只是zk或缓存中的
+ *  数据，相关配置及版本信息交由该服务配置。后续随着规模的扩大，该模块可以与
+ *  运行转发模块独立开来。
+ *  目前通过轮询对比的方式来更新路由，后续可以通过监听数据库配置的变化来完成
+ *  2、同步参数映射
+ *  原因同上
  */
 @Service
 @Slf4j
-public class TimeService {
+public class DataSyncService {
 
     @Autowired
     private ApiRouteRepository apiRouteRepository;
