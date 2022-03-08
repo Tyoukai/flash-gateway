@@ -1,13 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
 import GatewayRoute from '@/components/GatewayRoute'
 import HOME from '@/components/HOME'
 import ParameterMapping from '@/components/ParameterMapping'
 import QuotaLimit from '@/components/QuotaLimit'
 import RateLimit from '@/components/RateLimit'
-
-
 
 Vue.use(Router)
 

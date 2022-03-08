@@ -24,9 +24,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'QuotaLimit',
-  }
+export default {
+  name: 'QuotaLimit'
+}
 </script>
 
 <style scoped>

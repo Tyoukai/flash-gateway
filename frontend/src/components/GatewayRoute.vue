@@ -24,9 +24,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'GatewayRoute',
-  }
+export default {
+  name: 'GatewayRoute'
+}
 </script>
 
 <style scoped>

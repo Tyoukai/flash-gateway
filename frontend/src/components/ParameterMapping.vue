@@ -24,9 +24,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'ParameterMapping',
-  }
+export default {
+  name: 'ParameterMapping'
+}
 </script>
 
 <style scoped>
