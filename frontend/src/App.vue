@@ -4,7 +4,7 @@
     <nav class="navbar navbar-default" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="http://localhost:8080/#/">配置菜单</a>
+          <a class="navbar-brand" href="http://localhost:8080/#/">首页</a>
         </div>
         <div>
           <ul class="nav navbar-nav">
