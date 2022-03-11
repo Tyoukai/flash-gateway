@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="rateLimitDiv">
     <table class="table table-bordered">
       <thead>
       <tr>
@@ -11,11 +11,11 @@
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td>1</td>
-        <td>rate.limit.test.api</td>
-        <td>apiId:rate.limit.test.api</td>
-        <td>1</td>
+      <tr v-for="(id, api, rateKey, qps) in rateLimitList">
+        <td>{{id}}}</td>
+        <td>{{api}}</td>
+        <td>{{rateKey}}</td>
+        <td>{{qps}}</td>
         <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button></td>
       </tr>
       </tbody>
@@ -57,8 +57,8 @@
               确认
             </button>
           </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal -->
+        </div>
+      </div>
     </div>
   </div>
 </template>
