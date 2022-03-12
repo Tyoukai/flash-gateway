@@ -11,11 +11,11 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(id, api, rateKey, qps) in rateLimitList">
-        <td>{{id}}}</td>
-        <td>{{api}}</td>
-        <td>{{rateKey}}</td>
-        <td>{{qps}}</td>
+      <tr v-for="rateLimit in rateLimitList" v-bind:key="rateLimit">
+        <td>{{rateLimit.id}}}</td>
+        <td>{{rateLimit.api}}</td>
+        <td>{{rateLimit.rateKey}}</td>
+        <td>{{rateLimit.qps}}</td>
         <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button></td>
       </tr>
       </tbody>
@@ -65,7 +65,30 @@
 
 <script>
 export default {
-  name: 'RateLimit'
+  name: 'RateLimit',
+  // data: {
+  //   rateLimitList: [
+  //     {id: 1,
+  //       api: 'test',
+  //       rateKey: 'rate-key',
+  //       qps: 1
+  //     }
+  //   ]
+  // },
+  methods: {
+    send () {
+      const axios = require('axios').default
+      axios
+        .get('http://localhost:8100/gateway/rate-limit-config')
+        .then(response => {
+          console.log(response)
+          this.rateLimitList = response.data.rateLimitList
+        })
+        .cached(function (error) {
+          console.log(error)
+        })
+    }
+  }
 }
 </script>
 
