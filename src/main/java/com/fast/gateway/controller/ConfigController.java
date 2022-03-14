@@ -20,8 +20,15 @@ public class ConfigController {
         apiRateLimitDO.setApi("test.app.api");
         apiRateLimitDO.setRateKey("rate:key");
         apiRateLimitDO.setQps(1);
+
+        ApiRateLimitDO apiRateLimitDO1 = new ApiRateLimitDO();
+        apiRateLimitDO1.setId(2);
+        apiRateLimitDO1.setApi("test.app.api2");
+        apiRateLimitDO1.setRateKey("rate:key2");
+        apiRateLimitDO1.setQps(2);
         List<ApiRateLimitDO> limitDOS = new ArrayList<>();
         limitDOS.add(apiRateLimitDO);
+        limitDOS.add(apiRateLimitDO1);
         return Mono.just(limitDOS);
     }
 }
