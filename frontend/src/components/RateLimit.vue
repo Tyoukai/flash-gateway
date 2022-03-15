@@ -16,7 +16,7 @@
         <td>{{rateLimit.api}}</td>
         <td>{{rateLimit.rateKey}}</td>
         <td>{{rateLimit.qps}}</td>
-        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button></td>
+        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modifyRateLimit">删除</button></td>
       </tr>
       </tbody>
     </table>
@@ -53,7 +53,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭
             </button>
-            <button type="button" class="btn btn-primary">
+            <button type="button" class="btn btn-success">
               确认
             </button>
           </div>
@@ -69,19 +69,19 @@ export default {
   data () {
     return {
       rateLimitList: [
-        {id: 1,
-          api: 'test',
-          rateKey: 'rate-key',
-          qps: 1
+        {id: '',
+          api: '',
+          rateKey: '',
+          qps: ''
         }
       ]
     }
   },
   mounted: function () {
-    this.send()
+    this.listRateLimitConfig()
   },
   methods: {
-    send: function () {
+    listRateLimitConfig: function () {
       const axios = require('axios').default
       axios
         .get('http://localhost:8100/gateway/rate-limit-config')
@@ -92,9 +92,28 @@ export default {
         .cached(function (error) {
           console.log(error)
         })
+    },
+    addOrupdateRateLimitConfig: function (event) {
+      console.log(event.target.innerHTML)
+    },
+    deleteRateLimitConfig: function () {
+
     }
   }
 }
+$(function () {
+  $('#modifyRateLimit').on('show.bs.modal', function (event) {
+    var btnThis = $(event.relatedTarget); //触发事件的按钮
+    var id = btnThis.closest('tr').find('td').eq(0).text();//获取a标签所在行的某一列的内容,eq括号里面的数值表示列数
+    alert(id)
+    var api = btnThis.closest('tr').find('td').eq(1).text();
+    alert(api)
+    var rateKey = btnThis.closest('tr').find('td').eq(2).text();
+    alert(rateKey)
+    var qps = btnThis.closest('tr').find('td').eq(3).text();
+    alert(qps)
+  })
+})
 </script>
 
 <style scoped>
