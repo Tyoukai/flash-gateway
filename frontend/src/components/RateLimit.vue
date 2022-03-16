@@ -16,7 +16,7 @@
         <td>{{rateLimit.api}}</td>
         <td>{{rateLimit.rateKey}}</td>
         <td>{{rateLimit.qps}}</td>
-        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modifyRateLimit">删除</button></td>
+        <td><button type="button" v-on:click="showRateLimitConfig" class="btn btn-primary" data-toggle="modal" data-target="#modifyRateLimit">修改</button><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modifyRateLimit">删除</button></td>
       </tr>
       </tbody>
     </table>
@@ -34,19 +34,23 @@
           </div>
           <div class="modal-body">
             <form class="bs-example bs-example-form" role="form">
+              <div class="input-group" style="display:none;">
+                <span class="input-group-addon">id</span>
+                <input id="modifyId" v-model="idModel" type="text" class="form-control" placeholder="">
+              </div>
               <div class="input-group">
                 <span class="input-group-addon">api</span>
-                <input type="text" class="form-control" placeholder="">
+                <input id="modifyApi" v-model="apiModel" type="text" class="form-control" placeholder="">
               </div>
               <br>
               <div class="input-group">
                 <span class="input-group-addon">限流key</span>
-                <input type="text" class="form-control" placeholder="">
+                <input id="modifyKey" v-model="keyModel" type="text" class="form-control" placeholder="">
               </div>
               <br>
               <div class="input-group">
                 <span class="input-group-addon">QPS</span>
-                <input type="text" class="form-control" placeholder="">
+                <input id="modifyQps" v-model="qpsModel" type="text" class="form-control" placeholder="">
               </div>
             </form>
           </div>
@@ -98,22 +102,25 @@ export default {
     },
     deleteRateLimitConfig: function () {
 
+    },
+    showRateLimitConfig: function () {
+      this.apiModel = "wewe";
     }
   }
 }
-$(function () {
-  $('#modifyRateLimit').on('show.bs.modal', function (event) {
-    var btnThis = $(event.relatedTarget); //触发事件的按钮
-    var id = btnThis.closest('tr').find('td').eq(0).text();//获取a标签所在行的某一列的内容,eq括号里面的数值表示列数
-    alert(id)
-    var api = btnThis.closest('tr').find('td').eq(1).text();
-    alert(api)
-    var rateKey = btnThis.closest('tr').find('td').eq(2).text();
-    alert(rateKey)
-    var qps = btnThis.closest('tr').find('td').eq(3).text();
-    alert(qps)
-  })
-})
+// $(function () {
+//   $('#modifyRateLimit').on('show.bs.modal', function (event) {
+//     var rateLimitButton = $(event.relatedTarget); //触发事件的按钮
+//     var id = rateLimitButton.closest('tr').find('td').eq(0).text();
+//     var api = rateLimitButton.closest('tr').find('td').eq(1).text();
+//     var rateKey = rateLimitButton.closest('tr').find('td').eq(2).text();
+//     var qps = rateLimitButton.closest('tr').find('td').eq(3).text();
+//     $("#modifyId").attr("value", id)
+//     $("#modifyApi").attr("value", api)
+//     $("#modifyKey").attr("value", rateKey)
+//     $("#modifyQps").attr("value", qps)
+//   })
+// })
 </script>
 
 <style scoped>
