@@ -2,6 +2,7 @@ package com.fast.gateway.controller;
 
 import com.fast.gateway.entity.ApiRateLimitDO;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class ConfigController {
 
 
-    @RequestMapping("/rate-limit")
+    @RequestMapping("/list-rate-limit")
     public Mono<List<ApiRateLimitDO>> mapRateLimitConfig() {
         ApiRateLimitDO apiRateLimitDO = new ApiRateLimitDO();
         apiRateLimitDO.setId(1);
@@ -30,5 +31,12 @@ public class ConfigController {
         limitDOS.add(apiRateLimitDO);
         limitDOS.add(apiRateLimitDO1);
         return Mono.just(limitDOS);
+    }
+
+    @RequestMapping("/add-update-rate-limit")
+    public Mono<Boolean> addOrUpdateRateLimitConfig(@RequestParam Integer id,
+                                                    @RequestParam String api, @RequestParam String rateKey, @RequestParam Integer qps) {
+        System.out.println(id + "," + api + "," + rateKey + "," + qps);
+        return Mono.just(Boolean.TRUE);
     }
 }

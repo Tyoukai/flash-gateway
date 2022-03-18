@@ -88,7 +88,7 @@ export default {
     listRateLimitConfig: function () {
       const axios = require('axios').default
       axios
-        .get('http://localhost:8100/gateway/rate-limit-config')
+        .get('http://localhost:8100/gateway/list-rate-limit-config')
         .then(response => {
           console.log(response)
           this.rateLimitList = response.data
@@ -102,11 +102,32 @@ export default {
       var api = $("#modifyApi").val()
       var rateKey = $("#modifyKey").val()
       var qps = $("#modifyQps").val()
-      console.log(id)
-      console.log(api)
-      console.log(rateKey)
-      console.log(qps)
-      this.listRateLimitConfig()
+      if (typeof rateKey == "undefined" || rateKey == null || rateKey == "") {
+        alert("限流key不能为空")
+        return
+      }
+      if (typeof qps == "undefined" || qps == null || qps <= 0) {
+        alert("限流qps不能为空或小于等于0")
+        return
+      }
+
+      const axios = require('axios').default
+      axios
+        .get('http://localhost:8100/gateway/add-update-rate-limit-config', {
+          params: {
+            id: id,
+            api: api,
+            rateKey: rateKey,
+            qps: qps
+          }
+        })
+        .then(response => {
+          console.log(response.data)
+          this.listRateLimitConfig()
+        })
+        .cached(function (error) {
+          console.log(error)
+        })
     },
     deleteRateLimitConfig: function () {
       alert("delete")
