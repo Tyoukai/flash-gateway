@@ -4,4 +4,28 @@
     <select id="listAllApiRateLimitConfig" resultType="ApiRateLimitDO">
         SELECT * FROM api_rate_limit_config
     </select>
+
+    <insert id="addApiRateLimitConfig" parameterType="ApiRateLimitDO">
+        INSERT INTO api_rate_limit_config (api, rate_key, qps, create_time, update_time)
+        VALUES (#{api}, #{rateKey}, #{qps}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateApiRateLimitConfig" parameterType="ApiRateLimitDO">
+        UPDATE api_rate_limit_config
+        SET rate_key = #{rateKey},
+            qps = #{qps},
+            update_time = #{updateTime}
+        WHERE
+            id = #{id}
+        AND
+            api = #{api}
+    </update>
+
+    <delete id="deleteApiRateLimitConfig" parameterType="ApiRateLimitDO">
+        DELETE FROM api_rate_limit_config
+        WHERE
+            id = #{id}
+        AND
+            api = #{api}
+    </delete>
 </mapper>

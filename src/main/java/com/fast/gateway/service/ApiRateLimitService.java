@@ -30,6 +30,33 @@ public class ApiRateLimitService {
         return apiRateLimitRepository.listAllApiRateLimitConfig();
     }
 
+    public Boolean addApiRateLimitConfig(String api, String rateKey, int qps) {
+        ApiRateLimitDO apiRateLimitDO = new ApiRateLimitDO();
+        apiRateLimitDO.setApi(api);
+        apiRateLimitDO.setRateKey(rateKey);
+        apiRateLimitDO.setQps(qps);
+        apiRateLimitDO.setCreateTime(System.currentTimeMillis());
+        apiRateLimitDO.setUpdateTime(System.currentTimeMillis());
+        return apiRateLimitRepository.addApiRateLimitConfig(apiRateLimitDO) > 0;
+    }
+
+    public Boolean updateRateLimitConfig(int id, String api, String rateKey, int qps) {
+        ApiRateLimitDO apiRateLimitDO = new ApiRateLimitDO();
+        apiRateLimitDO.setId(id);
+        apiRateLimitDO.setApi(api);
+        apiRateLimitDO.setRateKey(rateKey);
+        apiRateLimitDO.setQps(qps);
+        apiRateLimitDO.setUpdateTime(System.currentTimeMillis());
+        return apiRateLimitRepository.updateApiRateLimitConfig(apiRateLimitDO) > 0;
+    }
+
+    public Boolean deleteRateLimitConfig(int id, String api) {
+        ApiRateLimitDO apiRateLimitDO = new ApiRateLimitDO();
+        apiRateLimitDO.setId(id);
+        apiRateLimitDO.setApi(api);
+        return apiRateLimitRepository.deleteApiRateLimitConfig(apiRateLimitDO) > 0;
+    }
+
     private String buildApiLimitConfigKey(ApiRateLimitDO apiRateLimitDO) {
         return apiRateLimitDO.getApi() + SPLIT_UNDERLINE + apiRateLimitDO.getRateKey();
     }

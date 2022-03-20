@@ -14,4 +14,28 @@ public interface ApiRateLimitRepository {
      * @return
      */
     List<ApiRateLimitDO> listAllApiRateLimitConfig();
+
+    /**
+     * 新增限流配置
+     *
+     * @param apiRateLimitDO
+     * @return
+     */
+    int addApiRateLimitConfig(ApiRateLimitDO apiRateLimitDO);
+
+    /**
+     * 修改限流配置
+     *
+     * @param apiRateLimitDO
+     * @return
+     */
+    int updateApiRateLimitConfig(ApiRateLimitDO apiRateLimitDO);
+
+    /**
+     * 删除限流配置
+     *
+     * @param apiRateLimitDO
+     * @return
+     */
+    int deleteApiRateLimitConfig(ApiRateLimitDO apiRateLimitDO);
 }
