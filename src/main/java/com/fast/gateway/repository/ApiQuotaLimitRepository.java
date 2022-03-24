@@ -15,4 +15,25 @@ public interface ApiQuotaLimitRepository {
      */
     List<ApiQuotaLimitDO> listAllApiQuotaLimitConfig();
 
+    /**
+     * 新增
+     *
+     * @return
+     */
+    int addApiQuotaLimitConfig(ApiQuotaLimitDO apiQuotaLimitDO);
+
+    /**
+     * 修改
+     *
+     * @return
+     */
+    int updateApiQuotaLimitConfig(ApiQuotaLimitDO apiQuotaLimitDO);
+
+    /**
+     * 删除
+     *
+     * @return
+     */
+    int deleteApiQuotaLimitConfig(ApiQuotaLimitDO apiQuotaLimitDO);
+
 }

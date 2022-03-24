@@ -2,6 +2,7 @@ package com.fast.gateway.controller;
 
 import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.entity.ApiRateLimitDO;
+import com.fast.gateway.service.ApiQuotaLimitService;
 import com.fast.gateway.service.ApiRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,9 @@ public class ConfigController {
 
     @Autowired
     private ApiRateLimitService apiRateLimitService;
+
+    @Autowired
+    private ApiQuotaLimitService apiQuotaLimitService;
 
     @RequestMapping("/list-rate-limit")
     public Mono<List<ApiRateLimitDO>> listRateLimitConfig() {
@@ -41,24 +45,21 @@ public class ConfigController {
 
     @RequestMapping("/list-quota-limit")
     public Mono<List<ApiQuotaLimitDO>> listQuotaLimitConfig() {
-        List<ApiQuotaLimitDO> list = new ArrayList<>();
-        ApiQuotaLimitDO apiQuotaLimitDO = new ApiQuotaLimitDO();
-        apiQuotaLimitDO.setId(1);
-        apiQuotaLimitDO.setApi("web.test.api");
-        apiQuotaLimitDO.setQuotaKey("key:value");
-        apiQuotaLimitDO.setQuota(10);
-        apiQuotaLimitDO.setTimeSpan(1800);
+        return Mono.just(apiQuotaLimitService.listQuotaLimitConfig());
+    }
 
-        ApiQuotaLimitDO apiQuotaLimitDO2 = new ApiQuotaLimitDO();
-        apiQuotaLimitDO2.setId(2);
-        apiQuotaLimitDO2.setApi("web.test.api2");
-        apiQuotaLimitDO2.setQuotaKey("key:value2");
-        apiQuotaLimitDO2.setQuota(10);
-        apiQuotaLimitDO2.setTimeSpan(1800);
+    @RequestMapping("/add-update-quota-limit")
+    public Mono<Boolean> addOrUpdateQuotaLimitConfig(Integer id,
+                                                    @RequestParam String api, @RequestParam String quotaKey, @RequestParam Integer quota, @RequestParam Integer timeSpan) {
+        if (id == null) {
+            return Mono.just(apiQuotaLimitService.addQuotaLimitConfig(api, quotaKey, quota, timeSpan));
+        } else {
+            return Mono.just(apiQuotaLimitService.updateQuotaLimitConfig(id, api, quotaKey, quota, timeSpan));
+        }
+    }
 
-        list.add(apiQuotaLimitDO);
-        list.add(apiQuotaLimitDO2);
-
-        return Mono.just(list);
+    @RequestMapping("/delete-quota-limit")
+    public Mono<Boolean> deleteQuotaLimitConfig(@RequestParam Integer id, @RequestParam String api) {
+        return Mono.just(apiQuotaLimitService.deleteQuotaLimitConfig(id, api));
     }
 }
