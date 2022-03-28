@@ -6,12 +6,12 @@
     </select>
 
     <insert id="addApiQuotaLimitConfig" parameterType="ApiQuotaLimitDO">
-        INSERT INTO api_quotao_limit_config (api, quota_key, quota, time_span, create_time, update_time)
+        INSERT INTO api_quota_limit_config (api, quota_key, quota, time_span, create_time, update_time)
         VALUES (#{api}, #{quotaKey}, #{quota}, #{timeSpan}, #{createTime}, #{updateTime})
     </insert>
 
-    <update id="updateApiRateLimitConfig" parameterType="ApiQuotaLimitDO">
-        UPDATE api_quotao_limit_config
+    <update id="updateApiQuotaLimitConfig" parameterType="ApiQuotaLimitDO">
+        UPDATE api_quota_limit_config
         SET quota_key = #{quotaKey},
             quota = #{quota},
             time_span = #{timeSpan},
@@ -22,8 +22,8 @@
             api = #{api}
     </update>
 
-    <delete id="deleteApiRateLimitConfig" parameterType="ApiQuotaLimitDO">
-        DELETE FROM api_quotao_limit_config
+    <delete id="deleteApiQuotaLimitConfig" parameterType="ApiQuotaLimitDO">
+        DELETE FROM api_quota_limit_config
         WHERE
             id = #{id}
         AND

@@ -18,7 +18,7 @@
         <td>{{quotaLimit.quotaKey}}</td>
         <td>{{quotaLimit.quota}}</td>
         <td>{{quotaLimit.timeSpan}}</td>
-        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyQuotaLimit">修改</button><button type="button" class="btn btn-danger">删除</button></td>
+        <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modifyQuotaLimit">修改</button><button type="button" v-on:click="deleteQuotaLimitConfig(quotaLimit.id, quotaLimit.api)" class="btn btn-danger">删除</button></td>
       </tr>
       </tbody>
     </table>
@@ -64,7 +64,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭
             </button>
-            <button type="button" class="btn btn-success" data-dismiss="modal">
+            <button type="button" class="btn btn-success" data-dismiss="modal" v-on:click="updateQuotaLimitConfig">
               确认
             </button>
           </div>
@@ -112,7 +112,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">关闭
             </button>
-            <button type="button" class="btn btn-success" data-dismiss="modal">
+            <button type="button" class="btn btn-success" data-dismiss="modal" v-on:click="addQuotaLimitConfig">
               确认
             </button>
           </div>
@@ -149,6 +149,95 @@ export default {
         .then(response => {
           console.log(response)
           this.quotaLimitList = response.data
+        })
+        .cached(function (error) {
+          console.log(error)
+        })
+    },
+    updateQuotaLimitConfig: function () {
+      var id = $("#modifyId").val()
+      var api = $("#modifyApi").val()
+      var quotaKey = $("#modifyKey").val()  
+      var quota = $("#modifyQuota").val()
+      var timeSpan = $("#modifyTimeSpan").val()
+      if (typeof quotaKey == "undefined" || quotaKey == null || quotaKey == "") {
+        alert("限额key不能为空")
+        return
+      }
+      if (typeof quota == "undefined" || quota == null || quota <= 0) {
+        alert("限额值不能为空或小于等于0")
+        return
+      }
+
+      const axios = require('axios').default
+      axios
+        .get('http://localhost:8100/gateway/add-update-quota-limit-config', {
+          params: {
+            id: id,
+            api: api,
+            quotaKey: quotaKey,
+            quota: quota,
+            timeSpan: timeSpan
+          }
+        })
+        .then(response => {
+          console.log(response.data)
+          this.listQuotaLimitConfig()
+        })
+        .cached(function (error) {
+          console.log(error)
+        })
+    },
+    addQuotaLimitConfig: function () {
+      var id = $("#addId").val()
+      var api = $("#addApi").val()
+      var quotaKey = $("#addKey").val()  
+      var quota = $("#addQuota").val()
+      var timeSpan = $("#addTimeSpan").val()
+      if (typeof quotaKey == "undefined" || quotaKey == null || quotaKey == "") {
+        alert("限额key不能为空")
+        return
+      }
+      if (typeof quota == "undefined" || quota == null || quota <= 0) {
+        alert("限额值不能为空或小于等于0")
+        return
+      }
+      if (typeof timeSpan == "undefined" || timeSpan == null || timeSpan <= 0) {
+        alert("时间间隔不能为空或小于等于0")
+        return
+      }
+
+      const axios = require('axios').default
+      axios
+        .get('http://localhost:8100/gateway/add-update-quota-limit-config', {
+          params: {
+            id: id,
+            api: api,
+            quotaKey: quotaKey,
+            quota: quota,
+            timeSpan: timeSpan
+          }
+        })
+        .then(response => {
+          console.log(response.data)
+          this.listQuotaLimitConfig()
+        })
+        .cached(function (error) {
+          console.log(error)
+        })
+    },
+    deleteQuotaLimitConfig: function (id, api) {
+      const axios = require('axios').default
+      axios
+        .get('http://localhost:8100/gateway/delete-quota-limit-config', {
+          params: {
+            id: id,
+            api: api
+          }
+        })
+        .then(response => {
+          console.log(response.data)
+          this.listQuotaLimitConfig()
         })
         .cached(function (error) {
           console.log(error)
