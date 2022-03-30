@@ -2,15 +2,16 @@ package com.fast.gateway.controller;
 
 import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.entity.ApiRateLimitDO;
+import com.fast.gateway.entity.ApiRouteConfigDTO;
 import com.fast.gateway.service.ApiQuotaLimitService;
 import com.fast.gateway.service.ApiRateLimitService;
+import com.fast.gateway.service.ApiRouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,6 +23,9 @@ public class ConfigController {
 
     @Autowired
     private ApiQuotaLimitService apiQuotaLimitService;
+
+    @Autowired
+    private ApiRouteService apiRouteService;
 
     @RequestMapping("/list-rate-limit")
     public Mono<List<ApiRateLimitDO>> listRateLimitConfig() {
@@ -61,5 +65,10 @@ public class ConfigController {
     @RequestMapping("/delete-quota-limit")
     public Mono<Boolean> deleteQuotaLimitConfig(@RequestParam Integer id, @RequestParam String api) {
         return Mono.just(apiQuotaLimitService.deleteQuotaLimitConfig(id, api));
+    }
+
+    @RequestMapping("/list-gateway-route")
+    public Mono<List<ApiRouteConfigDTO>> listGatewayRouteConfig() {
+        return Mono.just(apiRouteService.listApiRouteConfig());
     }
 }
