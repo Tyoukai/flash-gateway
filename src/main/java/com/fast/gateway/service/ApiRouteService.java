@@ -19,4 +19,8 @@ public class ApiRouteService {
         List<ApiRouteConfigDO> apiRouteConfigDOS = apiRouteRepository.listApiRouteConfig();
         return DataConvert.toDto(apiRouteConfigDOS);
     }
+
+    public List<ApiRouteConfigDO> listOriginApiRouteConfig() {
+        return apiRouteRepository.listApiRouteConfig();
+    }
 }

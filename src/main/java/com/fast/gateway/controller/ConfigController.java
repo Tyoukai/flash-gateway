@@ -2,7 +2,7 @@ package com.fast.gateway.controller;
 
 import com.fast.gateway.entity.ApiQuotaLimitDO;
 import com.fast.gateway.entity.ApiRateLimitDO;
-import com.fast.gateway.entity.ApiRouteConfigDTO;
+import com.fast.gateway.entity.ApiRouteConfigDO;
 import com.fast.gateway.service.ApiQuotaLimitService;
 import com.fast.gateway.service.ApiRateLimitService;
 import com.fast.gateway.service.ApiRouteService;
@@ -68,7 +68,7 @@ public class ConfigController {
     }
 
     @RequestMapping("/list-gateway-route")
-    public Mono<List<ApiRouteConfigDTO>> listGatewayRouteConfig() {
-        return Mono.just(apiRouteService.listApiRouteConfig());
+    public Mono<List<ApiRouteConfigDO>> listGatewayRouteConfig() {
+        return Mono.just(apiRouteService.listOriginApiRouteConfig());
     }
 }
